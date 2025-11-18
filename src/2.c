@@ -6,7 +6,7 @@
 
 // Controller
 void WheelController();
-CleanerState CleanerControl(CleanerState, bool, bool);
+CleanerState CleanerControl(CleanerState, SensorData, bool);
 
 SensorData DetermineObstacleLocation();
 SensorData DetermineDustExistence();
