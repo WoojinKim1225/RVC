@@ -5,7 +5,7 @@
 #define TICK 10
 
 // Controller
-CleanerCommand Controller();
+WheelState Controller();
 
 SensorData DetermineObstacleLocation();
 SensorData DetermineDustExistence();
@@ -21,8 +21,10 @@ MotorCommand MoveForward(bool enable);
 MotorCommand TurnLeft();
 MotorCommand TurnRight();
 MotorCommand MoveBackward(bool enable);
+void Cleaner(CleanerCommand com);
 
 
+int tickCount = 0;
 
 // sensor input
 bool ReadFrontSensor();
@@ -41,6 +43,14 @@ typedef enum {
 typedef enum {
     OFF, ON, UP
 }CleanerCommand;
+typedef enum{
+    STOP,
+    MOVE_FORWARD,
+    MOVE_BACK,
+    TURN_LEFT,
+    TURN_RIGHT,
+    MOVE_FORWARD_UP
+} WheelState;
 
 
 bool FrontSensorInterface(bool sensor_value){
@@ -78,23 +88,105 @@ SensorData Merge_Sensordata(SensorData obstacle, SensorData Dust){
     return data;
 }
 
-CleanerCommand Controller(SensorData data){
-    CleanerCommand Cleaner_com = OFF;
-    if (!data.F){
-        MoveForward(true);
-        Cleaner_com = ON;
-    }else if(data.F && data.L && data.R){
-        MoveBackward(true);
-    }else if(data.F && !data.L){
-        TurnLeft();
-    }else if(data.F && data.L && !data.R){
-        TurnRight();
+WheelState Controller(SensorData data, WheelState wheelstate, CleanerCommand com1){
+    bool F = data.F;
+    bool L = data.L;
+    bool D = data.D;
+    bool R = data.R;
+    CleanerCommand com = com1;
+    switch(wheelstate){
+        case STOP:
+            if (F && L && R){
+                MoveBackward(true);
+                tickCount = 0;
+                return MOVE_BACK;
+            }else if(!F && D){
+                MoveForward(true);
+                tickCount = 0;
+                com = UP;
+                return MOVE_FORWARD_UP;
+            }else if(F && !R && L){
+                TurnRight();
+                tickCount = 0;
+                return TURN_RIGHT;
+            }else if(!F){
+                MoveForward();
+                tickCount = 0;
+                com = ON;
+                return MOVE_FORWARD
+            }else if(F && !L){
+                TurnLeft();
+                tickCount = 0;
+                return TURN_LEFT;
+            }
+            break;
+        case MOVE_FORWARD:
+            if (F){
+                MoveBackward(false);
+                tickCount = 0;
+                return STOP;
+            }else if(D){
+                com = UP;
+                tickCount = 0;
+                return MOVE_FORWARD_UP;
+            }
+            break;
+        case MOVE_BACK:
+            if (!L){
+                MoveBackward(false);
+                TurnLeft();
+                tickCount = 0;
+                return TURN_LEFT;
+            }else if(!R){
+                MoveBackward(false);
+                TurnRight();
+                tickCount = 0;
+                return TURN_RIGHT;
+            }
+            break;
+        case TURN_LEFT:
+            if (!D && tickCount >= 5){
+                MoveForward(true);
+                com = ON;
+                tickCount = 0;
+                return MOVE_FORWARD;
+            }else if(D && tickCount >= 5){
+                MoveForward(true);
+                com = UP;
+                tickCount = 0;
+                return MOVE_FORWARD_UP;
+            }
+            break;
+        case TURN_RIGHT:
+            if (!D && tickCount >= 5){
+                MoveForward(true);
+                com = ON;
+                tickCount = 0;
+                return MOVE_FORWARD;
+            }else if(D && tickCount >= 5){
+                MoveForward(true);
+                com = UP;
+                tickCount = 0;
+                return MOVE_FORWARD_UP;
+            }
+            break;
+        case MOVE_FORWARD_UP:
+            if (F){
+                MoveForward(false);
+                com = OFF;
+                tickCount = 0;
+                return STOP;
+            }else if(tickCount >= 5){
+                com = ON;
+                tickCount = 0;
+                return MOVE_FORWARD;
+            }
+            break;
     }
+    tickCount ++;
+    Clenaer(com);
 
-    if (data.D){
-        CleanerCommand Cleaner_com = UP;
-    }
-    return Cleaner_com;
+
 }
 void main()
 {
@@ -102,13 +194,13 @@ void main()
     SensorData dust_Existence;
     SensorData Merge_data;
     CleanerCommand cleaner_com;
-
+    WheelState wheelstate = STOP;
     while(1)
     {
         obstacle_Location = DetermineObstacleLocation();
         dust_Existence = DetermineDustExistence();
         Merge_data = Merge_Sensordata(obstacle_Location,DetermineDustExistence);
-        cleaner_com = Controller(Merge_data);
+        wheelstate = Controller(Merge_data, wheelstate);
 
         wait(TICK);
     }
