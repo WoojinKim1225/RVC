@@ -31,6 +31,8 @@ int ReadLeftSensor();
 int ReadRightSensor();
 int ReadDustSensor();
 
+int tickCount = 0;
+
 typedef struct {
     bool F;   
     bool L;   
@@ -38,6 +40,13 @@ typedef struct {
     bool D; 
 } SensorData;
 
+typedef enum{
+    STOP,
+    MOVE_FORWARD,
+    MOVE_BACK,
+    TURN_LEFT,
+    TURN_RIGHT
+} WheelState;
 
 typedef enum {
     CLEANER_OFF,
@@ -90,6 +99,7 @@ void main()
     bool dust_existence;
 
     bool cleaner_control_enable;
+    WheelState wheel_state = STOP;
     CleanerState cleaner_state = CLEANER_OFF;
 
     while(1)
@@ -97,11 +107,84 @@ void main()
         obstacle_location = DetermineObstacleLocation();
         dust_existence = DetermineDustExistence();
         
+        wheel_state = WheelControl(wheel_state, obstacle_location, &cleaner_control_enable);
         cleaner_state = CleanerControl(cleaner_state, dust_existence, cleaner_control_enable);
 
         wait(TICK);
     }
 }
+
+wheelState
+WheelControl(WheelState wheel_state, SensorData obstacle_location, bool * cleaner_control_enable)
+{
+    bool F = obstacle_location.F;           
+    bool L = obstacle_location.L;            
+    bool R = obstacle_location.R;    
+
+    switch(wheel_state){
+        case STOP:
+            if(F && !L){
+                TurnLeft();
+                tickCount = 0;
+                return TURN_LEFT;
+            }
+            if (F && L && R){
+                MoveBackward();
+                tickCount = 0;
+                return MOVE_BACK;
+            }
+            if (!F){
+                MoveForward(true);
+                *cleaner_control_enable = true;
+                tickCount = 0;
+                return MOVE_FORWARD;
+            }
+            if (F && !R && L){
+                TurnRight();
+                tickCount = 0;
+                return TURN_RIGHT;
+            }
+        break;
+        case MOVE_FORWARD:
+            if(F){
+                MoveForward(false);
+                *cleaner_control_enable= false;
+                tickCount = 0;
+                return STOP;
+            }
+        break;
+        case MOVE_BACK:
+            if (tickCount >= 5){
+                TurnLeft();
+                tickCount = 0;
+                return TURN_LEFT;
+            }
+        break;
+        case TURN_LEFT:
+            if (tickCount >= 5){
+                MoveForward(true);
+                *cleaner_control_enable = true;
+                tickCount = 0;
+                return MOVE_FORWARD;
+            }
+        break;
+        case TURN_RIGHT:
+            if (tickCount >= 5){
+                MoveForward(true);
+                *cleaner_control_enable = true;
+                tickCount = 0;
+                return MOVE_FORWARD;
+            }
+        break;
+    }
+    tickCount++;
+}
+    
+    
+    
+    
+    
+    
 
 CleanerState
 CleanerControl(CleanerState cleaner_state, bool dust_existence, bool cleaner_control_enable)
