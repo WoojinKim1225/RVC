@@ -8,8 +8,8 @@
 void WheelController();
 CleanerState CleanerControl(CleanerState, bool, bool);
 
-int DetermineObstacleLocation();
-int DetermineDustExistence();
+SensorData DetermineObstacleLocation();
+SensorData DetermineDustExistence();
 // 인터페이스
 void FrontSensorInterface();
 void LeftSensorInterface();
@@ -53,8 +53,38 @@ enum CleanerCommand {
     OFF, ON, UP
 };
 
-void 
-main()
+
+bool FrontSensorInterface(bool sensor_value){
+    return sensor_value;
+}
+bool LeftSensorInterface(int analog_value){
+    if (analog_value < 100){
+        return true;
+    }
+    return false;
+}
+bool RightSensorInterface(int analog_value){
+    if (analog_value < 100){
+        return true;
+    }
+    return false;
+}
+bool DustSensorInterface(int analog_value){
+    if (analog_value > 600){
+        return true;
+    }
+    return false;
+}
+SensorData DetermineObstacleLocation(bool F, bool L, bool R){
+    SensorData data = {F,L,R,false};
+    return data;
+}
+SensorData DetermineDustExistence(bool D){
+    SensorData data = {false, false, false, D};
+    return data;
+}
+
+void main()
 {
     int obstacle_location;
     bool dust_existence;

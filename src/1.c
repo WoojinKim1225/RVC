@@ -7,13 +7,14 @@
 // Controller
 void Controller();
 
-int DetermineObstacleLocation();
-int DetermineDustExistence();
+SensorData DetermineObstacleLocation();
+SensorData DetermineDustExistence();
+SensorData Merge_Sensordata();
 // 인터페이스
-void FrontSensorInterface();
-void LeftSensorInterface();
-void RightSensorInterface();
-void DustSensorInterface();
+bool FrontSensorInterface();
+bool LeftSensorInterface();
+bool RightSensorInterface();
+bool DustSensorInterface();
 
 //동작
 void MoveForward();
@@ -26,30 +27,6 @@ bool ReadFrontSensor();
 int ReadLeftSensor();
 int ReadRightSensor();
 int ReadDustSensor();
-
-bool ReadFrontSensor(bool sensor_value){
-    return sensor_value;
-};
-int ReadLeftSensor(int analog_value){
-    if (analog_value < 100){
-        return true;
-    }
-    return false;
-};
-int ReadRightSensor(int analog_value){
-    if (analog_value < 100){
-        return true;
-    }
-    return false;
-};
-int ReadDustSensor(int analog_value){
-    if (analog_value < 100){
-        return true;
-    }
-    return false;
-};
-
-
 typedef struct {
     bool F;   
     bool L;   
@@ -64,6 +41,40 @@ enum CleanerCommand {
 };
 
 
+bool FrontSensorInterface(bool sensor_value){
+    return sensor_value;
+}
+bool LeftSensorInterface(int analog_value){
+    if (analog_value < 100){
+        return true;
+    }
+    return false;
+}
+bool RightSensorInterface(int analog_value){
+    if (analog_value < 100){
+        return true;
+    }
+    return false;
+}
+bool DustSensorInterface(int analog_value){
+    if (analog_value > 600){
+        return true;
+    }
+    return false;
+}
+SensorData DetermineObstacleLocation(bool F, bool L, bool R){
+    SensorData data = {F,L,R,false};
+    return data;
+}
+SensorData DetermineDustExistence(bool D){
+    SensorData data = {false, false, false, D};
+    return data;
+}
+SensorData Merge_Sensordata(SensorData obstacle, SensorData Dust){
+    SensorData data = obstacle;
+    data.D = Dust.D;
+    return data;
+}
 void main()
 {
     int obstacle_Location;
