@@ -81,27 +81,29 @@ CleanerControl(CleanerState cleaner_state, bool dust_existence, bool cleaner_con
         case CLEANER_OFF:
             if (cleaner_control_enable) {
                 CleanerOn();
-                cleaner_state = CLEANER_ON;
+                return CLEANER_ON;
             }
         break;
         case CLEANER_ON:
             if (dust_existence) {
                 CleanerUp();
-                cleaner_state = CLEANER_UP;
+                return CLEANER_UP;
             } else if (!cleaner_control_enable) {
                 CleanerOff();
-                cleaner_state = CLEANER_OFF;
+                return CLEANER_OFF;
             }
             break;
         break;
         case CLEANER_UP:
             if (!dust_existence) {
                 CleanerOn();
-                cleaner_state = CLEANER_ON;
+                return CLEANER_ON;
             } else if (!cleaner_control_enable) {
                 CleanerOff();
-                cleaner_state = CLEANER_OFF;
+                return CLEANER_OFF;
             }
         break;
     }
+    // cleaner state가 안바뀌므로, 기존의 스테이트를 return.
+    return cleaner_state;
 }
