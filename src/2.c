@@ -86,8 +86,8 @@ SensorData DetermineDustExistence(bool D){
 
 void main()
 {
-    int obstacle_location;
-    bool dust_existence;
+    SensorData obstacle_location;
+    SensorData dust_existence;
 
     bool cleaner_control_enable;
     CleanerState cleaner_state = CLEANER_OFF;
@@ -104,7 +104,7 @@ void main()
 }
 
 CleanerState
-CleanerControl(CleanerState cleaner_state, bool dust_existence, bool cleaner_control_enable)
+CleanerControl(CleanerState cleaner_state, SensorData dust_existence, bool cleaner_control_enable)
 {
     switch (cleaner_state) 
     {
@@ -115,7 +115,7 @@ CleanerControl(CleanerState cleaner_state, bool dust_existence, bool cleaner_con
             }
         break;
         case CLEANER_ON:
-            if (dust_existence) {
+            if (dust_existence.D) {
                 CleanerUp();
                 return CLEANER_UP;
             } else if (!cleaner_control_enable) {
@@ -125,7 +125,7 @@ CleanerControl(CleanerState cleaner_state, bool dust_existence, bool cleaner_con
             break;
         break;
         case CLEANER_UP:
-            if (!dust_existence) {
+            if (!dust_existence.D) {
                 CleanerOn();
                 return CLEANER_ON;
             } else if (!cleaner_control_enable) {
