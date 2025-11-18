@@ -64,11 +64,11 @@ bool DustSensorInterface(int analog_value){
     return false;
 }
 SensorData DetermineObstacleLocation(bool F, bool L, bool R){
-    SensorData data = {F,L,R,true};
+    SensorData data = {F,L,R,false};
     return data;
 }
 SensorData DetermineDustExistence(bool D){
-    SensorData data = {true, true, true, D};
+    SensorData data = {false, false, false, D};
     return data;
 }
 
