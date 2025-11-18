@@ -25,6 +25,29 @@ int ReadLeftSensor();
 int ReadRightSensor();
 int ReadDustSensor();
 
+bool ReadFrontSensor(bool sensor_value){
+    return sensor_value;
+};
+int ReadLeftSensor(int analog_value){
+    if (analog_value < 100){
+        return true;
+    }
+    return false;
+};
+int ReadRightSensor(int analog_value){
+    if (analog_value < 100){
+        return true;
+    }
+    return false;
+};
+int ReadDustSensor(int analog_value){
+    if (analog_value < 100){
+        return true;
+    }
+    return false;
+};
+
+
 typedef struct {
     bool F;   
     bool L;   
