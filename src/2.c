@@ -4,35 +4,7 @@
 
 #define TICK 10
 
-// Controller
-WheelState WheelControl(WheelState, SensorData, bool*);
-CleanerState CleanerControl(CleanerState, SensorData, bool);
-
-SensorData DetermineObstacleLocation();
-SensorData DetermineDustExistence();
-
-// 인터페이스
-void FrontSensorInterface();
-void LeftSensorInterface();
-void RightSensorInterface();
-void DustSensorInterface();
-
-//동작
-void MoveForward();
-void TurnLeft();
-void TurnRight();
-void MoveBackward();
-void CleanerOff();
-void CleanerOn();
-void CleanerUp();
-
-// sensor input
-bool ReadFrontSensor();
-int ReadLeftSensor();
-int ReadRightSensor();
-int ReadDustSensor();
-
-int tickCount = 0;
+/* Forward declarations */
 
 typedef struct {
     bool F;   
@@ -55,6 +27,8 @@ typedef enum {
     CLEANER_UP
 } CleanerState;
 
+/* Motor/Cleaner command enums */
+
 enum MotorCommand {
     MOVE_FWD, MOVE_BACK, TURN_LEFT, TURN_RIGHT, STOP 
 };
@@ -63,35 +37,87 @@ enum CleanerCommand {
     OFF, ON, UP
 };
 
-void 
-main()
+/* Function prototypes */
+
+WheelState WheelControl(WheelState wheel_state, 
+                        SensorData obstacle_location, 
+                        bool* cleaner_control_enable);
+
+CleanerState CleanerControl(CleanerState cleaner_state, 
+                            SensorData dust_existence, 
+                            bool cleaner_control_enable);
+
+SensorData DetermineObstacleLocation(bool F, bool L, bool R);
+SensorData DetermineDustExistence(bool D);
+
+/* Sensor interfaces */
+
+bool FrontSensorInterface(bool sensor_value);
+bool LeftSensorInterface(int analog_value);
+bool RightSensorInterface(int analog_value);
+bool DustSensorInterface(int analog_value);
+
+/* Actions */
+
+void MoveForward(bool enable_cleaner);
+void TurnLeft(void);
+void TurnRight(void);
+void MoveBackward(void);
+void CleanerOff(void);
+void CleanerOn(void);
+void CleanerUp(void);
+
+// sensor input
+bool ReadFrontSensor(void);
+int ReadLeftSensor(void);
+int ReadRightSensor(void);
+int ReadDustSensor(void);
+
+int tickCount = 0;
+
+
+/* ------------------------------------------------------------------------- */
+/* MAIN LOOP                                                                 */
+/* ------------------------------------------------------------------------- */
+
+int
+main (void)
 {
     SensorData obstacle_location;
     SensorData dust_existence;
 
-    bool cleaner_control_enable;
+    bool cleaner_control_enable = false;
     WheelState wheel_state = STOP;
     CleanerState cleaner_state = CLEANER_OFF;
 
-    while(1)
+    while (1)
     {
+        // TODO: function inputs
         obstacle_location = DetermineObstacleLocation();
         dust_existence = DetermineDustExistence();
         
-        wheel_state = WheelControl(wheel_state, obstacle_location, &cleaner_control_enable);
-        cleaner_state = CleanerControl(cleaner_state, dust_existence, cleaner_control_enable);
+        wheel_state = 
+            WheelControl(wheel_state, obstacle_location, 
+                            &cleaner_control_enable);
+        cleaner_state = 
+            CleanerControl(cleaner_state, dust_existence, 
+                            cleaner_control_enable);
 
         wait(TICK);
     }
 }
 
+/* ------------------------------------------------------------------------- */
+/* SENSOR INTERFACES                                                         */
+/* ------------------------------------------------------------------------- */
+
 bool 
-FrontSensorInterface(bool sensor_value){
+FrontSensorInterface (bool sensor_value){
     return sensor_value;
 }
 
 bool 
-LeftSensorInterface(int analog_value){
+LeftSensorInterface (int analog_value){
     if (analog_value < 100){
         return true;
     }
@@ -99,7 +125,7 @@ LeftSensorInterface(int analog_value){
 }
 
 bool 
-RightSensorInterface(int analog_value){
+RightSensorInterface (int analog_value){
     if (analog_value < 100){
         return true;
     }
@@ -107,27 +133,35 @@ RightSensorInterface(int analog_value){
 }
 
 bool 
-DustSensorInterface(int analog_value){
+DustSensorInterface (int analog_value){
     if (analog_value > 600){
         return true;
     }
     return false;
 }
 
+/* ------------------------------------------------------------------------- */
+/* DETERMINE SENSOR STATES                                                   */
+/* ------------------------------------------------------------------------- */
+
 SensorData 
-DetermineObstacleLocation(bool F, bool L, bool R){
+DetermineObstacleLocation (bool F, bool L, bool R){
     SensorData data = {F,L,R,false};
     return data;
 }
 
 SensorData 
-DetermineDustExistence(bool D){
+DetermineDustExistence (bool D){
     SensorData data = {false, false, false, D};
     return data;
 }
 
+/* ------------------------------------------------------------------------- */
+/* WHEEL CONTROL FSM                                                         */
+/* ------------------------------------------------------------------------- */
+
 WheelState
-WheelControl(WheelState wheel_state, SensorData obstacle_location, bool * cleaner_control_enable)
+WheelControl (WheelState wheel_state, SensorData obstacle_location, bool * cleaner_control_enable)
 {
     bool F = obstacle_location.F;           
     bool L = obstacle_location.L;            
@@ -191,7 +225,11 @@ WheelControl(WheelState wheel_state, SensorData obstacle_location, bool * cleane
     }
     tickCount++;
 }
-    
+
+/* ------------------------------------------------------------------------- */
+/* CLEANER CONTROL FSM                                                       */
+/* ------------------------------------------------------------------------- */
+
 CleanerState
 CleanerControl(CleanerState cleaner_state, SensorData dust_existence, bool cleaner_control_enable)
 {
