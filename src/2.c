@@ -5,16 +5,16 @@
 #define TICK 10
 
 // Controller
-void Wheel_Controller();
-void Cleaner_Control();
+void WheelController();
+void CleanerControl();
 
-int Det_OL();
-int Det_DE();
+int DetermineObstacleLocation();
+int DetermineDustExistence();
 // 인터페이스
-void Front_SI();
-void Left_SI();
-void Right_SI();
-void Dust_SI();
+void FrontSensorInterface();
+void LeftSensorInterface();
+void RightSensorInterface();
+void DustSensorInterface();
 
 //동작
 void MoveForward();
@@ -37,19 +37,19 @@ typedef struct {
 enum MotorCommand {
     MOVE_FWD, MOVE_BACK, TURN_LEFT, TURN_RIGHT, STOP 
 };
-enum CleanerMommand {
+enum CleanerCommand {
     OFF, ON, UP
 };
 
 void main()
 {
-    int obstacle_Location;
-    bool dust_Existence;
+    int obstacle_location;
+    bool dust_existence;
 
     while(1)
     {
-        obstacle_Location = Det_OL();
-        dust_Existence = Det_DE();
+        obstacle_location = DetermineObstacleLocation();
+        dust_existence = DetermineDustExistence();
 
         wait(TICK);
     }
