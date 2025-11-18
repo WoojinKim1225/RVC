@@ -2,6 +2,8 @@
 #include <stdlib.h> 
 #include <stdbool.h>
 
+#define TICK 10
+
 // Controller
 void Controller();
 
@@ -49,6 +51,6 @@ void main()
         obstacle_Location = Det_OL();
         dust_Existence = Det_DE();
 
-        wait(200);
+        wait(TICK);
     }
 }
