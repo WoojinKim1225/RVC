@@ -5,11 +5,12 @@
 #define TICK 10
 
 // Controller
-void WheelController();
+WheelState WheelControl(WheelState, SensorData, bool*);
 CleanerState CleanerControl(CleanerState, SensorData, bool);
 
 SensorData DetermineObstacleLocation();
 SensorData DetermineDustExistence();
+
 // 인터페이스
 void FrontSensorInterface();
 void LeftSensorInterface();
@@ -62,38 +63,8 @@ enum CleanerCommand {
     OFF, ON, UP
 };
 
-
-bool FrontSensorInterface(bool sensor_value){
-    return sensor_value;
-}
-bool LeftSensorInterface(int analog_value){
-    if (analog_value < 100){
-        return true;
-    }
-    return false;
-}
-bool RightSensorInterface(int analog_value){
-    if (analog_value < 100){
-        return true;
-    }
-    return false;
-}
-bool DustSensorInterface(int analog_value){
-    if (analog_value > 600){
-        return true;
-    }
-    return false;
-}
-SensorData DetermineObstacleLocation(bool F, bool L, bool R){
-    SensorData data = {F,L,R,false};
-    return data;
-}
-SensorData DetermineDustExistence(bool D){
-    SensorData data = {false, false, false, D};
-    return data;
-}
-
-void main()
+void 
+main()
 {
     SensorData obstacle_location;
     SensorData dust_existence;
@@ -114,7 +85,48 @@ void main()
     }
 }
 
-wheelState
+bool 
+FrontSensorInterface(bool sensor_value){
+    return sensor_value;
+}
+
+bool 
+LeftSensorInterface(int analog_value){
+    if (analog_value < 100){
+        return true;
+    }
+    return false;
+}
+
+bool 
+RightSensorInterface(int analog_value){
+    if (analog_value < 100){
+        return true;
+    }
+    return false;
+}
+
+bool 
+DustSensorInterface(int analog_value){
+    if (analog_value > 600){
+        return true;
+    }
+    return false;
+}
+
+SensorData 
+DetermineObstacleLocation(bool F, bool L, bool R){
+    SensorData data = {F,L,R,false};
+    return data;
+}
+
+SensorData 
+DetermineDustExistence(bool D){
+    SensorData data = {false, false, false, D};
+    return data;
+}
+
+WheelState
 WheelControl(WheelState wheel_state, SensorData obstacle_location, bool * cleaner_control_enable)
 {
     bool F = obstacle_location.F;           
@@ -180,12 +192,6 @@ WheelControl(WheelState wheel_state, SensorData obstacle_location, bool * cleane
     tickCount++;
 }
     
-    
-    
-    
-    
-    
-
 CleanerState
 CleanerControl(CleanerState cleaner_state, SensorData dust_existence, bool cleaner_control_enable)
 {
