@@ -92,6 +92,7 @@ main (void)
 
     while (1)
     {
+        // TODO: function inputs
         obstacle_location = DetermineObstacleLocation();
         dust_existence = DetermineDustExistence();
         
