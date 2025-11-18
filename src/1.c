@@ -5,7 +5,7 @@
 #define TICK 10
 
 // Controller
-System_State Controller();
+CleanerCommand Controller();
 
 SensorData DetermineObstacleLocation();
 SensorData DetermineDustExistence();
