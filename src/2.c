@@ -118,17 +118,18 @@ CleanerControl(CleanerState cleaner_state, SensorData dust_existence, bool clean
             if (dust_existence.D) {
                 CleanerUp();
                 return CLEANER_UP;
-            } else if (!cleaner_control_enable) {
+            }
+            if (!cleaner_control_enable) {
                 CleanerOff();
                 return CLEANER_OFF;
             }
-            break;
         break;
         case CLEANER_UP:
             if (!dust_existence.D) {
                 CleanerOn();
                 return CLEANER_ON;
-            } else if (!cleaner_control_enable) {
+            }
+            if (!cleaner_control_enable) {
                 CleanerOff();
                 return CLEANER_OFF;
             }
