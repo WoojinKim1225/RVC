@@ -98,13 +98,17 @@ CleanerCommand Controller(SensorData data){
 }
 void main()
 {
-    int obstacle_Location;
-    bool dust_Existence;
+    SensorData obstacle_Location;
+    SensorData dust_Existence;
+    SensorData Merge_data;
+    CleanerCommand cleaner_com;
 
     while(1)
     {
         obstacle_Location = DetermineObstacleLocation();
         dust_Existence = DetermineDustExistence();
+        Merge_data = Merge_Sensordata(obstacle_Location,DetermineDustExistence);
+        cleaner_com = Controller(Merge_data);
 
         wait(TICK);
     }
