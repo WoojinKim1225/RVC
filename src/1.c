@@ -5,7 +5,7 @@
 #define TICK 10
 
 // Controller
-void Controller();
+System_State Controller();
 
 SensorData DetermineObstacleLocation();
 SensorData DetermineDustExistence();
@@ -17,10 +17,12 @@ bool RightSensorInterface();
 bool DustSensorInterface();
 
 //동작
-void MoveForward();
-void TurnLeft();
-void TurnRight();
-void MoveBackward();
+MotorCommand MoveForward(bool enable);
+MotorCommand TurnLeft();
+MotorCommand TurnRight();
+MotorCommand MoveBackward(bool enable);
+
+
 
 // sensor input
 bool ReadFrontSensor();
@@ -33,12 +35,12 @@ typedef struct {
     bool R;  
     bool D; 
 } SensorData;
-enum MotorCommand {
+typedef enum {
     MOVE_FWD, MOVE_BACK, TURN_LEFT, TURN_RIGHT, STOP 
-};
-enum CleanerCommand {
+}MotorCommand;
+typedef enum {
     OFF, ON, UP
-};
+}CleanerCommand;
 
 
 bool FrontSensorInterface(bool sensor_value){
@@ -74,6 +76,25 @@ SensorData Merge_Sensordata(SensorData obstacle, SensorData Dust){
     SensorData data = obstacle;
     data.D = Dust.D;
     return data;
+}
+
+CleanerCommand Controller(SensorData data){
+    CleanerCommand Cleaner_com = OFF;
+    if (!data.F){
+        MoveForward(true);
+        Cleaner_com = ON;
+    }else if(data.F && data.L && data.R){
+        MoveBackward(true);
+    }else if(data.F && !data.L){
+        TurnLeft();
+    }else if(data.F && data.L && !data.R){
+        TurnRight();
+    }
+
+    if (data.D){
+        CleanerCommand Cleaner_com = UP;
+    }
+    return Cleaner_com;
 }
 void main()
 {
