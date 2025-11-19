@@ -5,36 +5,6 @@
 #define TICK 10
 
 /* ------------------------------------------------------------------------- */
-/* CONTROLLER INTERFACE                                                      */
-/* ------------------------------------------------------------------------- */
-
-CleanerCommand Controller();
-
-/* Sensor-state determination */
-SensorData DetermineObstacleLocation();
-SensorData DetermineDustExistence();
-SensorData Merge_Sensordata();
-
-/* Sensor interface */
-bool FrontSensorInterface();
-bool LeftSensorInterface();
-bool RightSensorInterface();
-bool DustSensorInterface();
-
-/* Actuators */
-MotorCommand MoveForward(bool enable);
-MotorCommand TurnLeft();
-MotorCommand TurnRight();
-MotorCommand MoveBackward(bool enable);
-
-/* Raw sensor input functions */
-bool ReadFrontSensor();
-int ReadLeftSensor();
-int ReadRightSensor();
-int ReadDustSensor();
-
-
-/* ------------------------------------------------------------------------- */
 /* DATA STRUCTURES                                                           */
 /* ------------------------------------------------------------------------- */
 
@@ -62,6 +32,73 @@ typedef enum {
     UP
 } CleanerCommand;
 
+/* ------------------------------------------------------------------------- */
+/* CONTROLLER INTERFACE                                                      */
+/* ------------------------------------------------------------------------- */
+
+CleanerCommand Controller();
+
+/* Sensor-state determination */
+SensorData DetermineObstacleLocation();
+SensorData DetermineDustExistence();
+SensorData Merge_Sensordata();
+
+/* Sensor interface */
+bool FrontSensorInterface(bool sensor_value);
+bool LeftSensorInterface(int analog_value);
+bool RightSensorInterface(int analog_value);
+bool DustSensorInterface(int analog_value);
+
+/* Actuators */
+MotorCommand MoveForward(bool enable);
+MotorCommand TurnLeft();
+MotorCommand TurnRight();
+MotorCommand MoveBackward(bool enable);
+
+/* Raw sensor input functions */
+bool ReadFrontSensor(void);
+int ReadLeftSensor(void);
+int ReadRightSensor(void);
+int ReadDustSensor(void);
+
+int tickCount = 0;
+
+
+/* ------------------------------------------------------------------------- */
+/* MAIN LOOP                                                                  */
+/* ------------------------------------------------------------------------- */
+
+int 
+main(void)
+{
+    SensorData obstacle_Location;
+    SensorData dust_Existence;
+    SensorData merged_data;
+    CleanerCommand cleaner_com = OFF;
+
+    while (1)
+    {
+        bool rawF = ReadFrontSensor();
+        int rawL = ReadLeftSensor();
+        int rawR = ReadRightSensor();
+        int rawD = ReadDustSensor();
+
+        bool F = FrontSensorInterface(rawF);
+        bool L = LeftSensorInterface(rawL);
+        bool R = RightSensorInterface(rawR);
+        bool D = DustSensorInterface(rawD);
+
+        obstacle_Location = DetermineObstacleLocation();
+        dust_Existence = DetermineDustExistence();
+
+        merged_data = Merge_Sensordata(obstacle_Location, dust_Existence);
+
+        cleaner_com = Controller(merged_data);
+
+        wait(TICK);
+    }
+}
+
 
 /* ------------------------------------------------------------------------- */
 /* SENSOR INTERFACE IMPLEMENTATION                                           */
@@ -87,7 +124,6 @@ DustSensorInterface(int analog_value){
     return (analog_value > 600);
 }
 
-
 /* ------------------------------------------------------------------------- */
 /* SENSOR STATE DETERMINATION                                                */
 /* ------------------------------------------------------------------------- */
@@ -111,7 +147,6 @@ Merge_Sensordata(SensorData obstacle, SensorData dust){
     data.D = dust.D;
     return data;
 }
-
 
 /* ------------------------------------------------------------------------- */
 /* MAIN CONTROLLER FSM                                                       */
@@ -150,34 +185,4 @@ Controller(SensorData data)
     }
 
     return cleaner_com;
-}
-
-
-/* ------------------------------------------------------------------------- */
-/* MAIN LOOP                                                                  */
-/* ------------------------------------------------------------------------- */
-
-void 
-main(void)
-{
-    SensorData obstacle_Location;
-    SensorData dust_Existence;
-    SensorData merged_data;
-    CleanerCommand cleaner_com;
-
-    while (1)
-    {
-        /* Step 1: Read logical sensor states */
-        obstacle_Location = DetermineObstacleLocation();
-        dust_Existence = DetermineDustExistence();
-
-        /* Step 2: Merge obstacle + dust info */
-        merged_data = Merge_Sensordata(obstacle_Location, dust_Existence);
-
-        /* Step 3: Compute actuator commands */
-        cleaner_com = Controller(merged_data);
-
-        /* Step 4: Wait for next control tick */
-        wait(TICK);
-    }
 }

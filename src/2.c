@@ -4,15 +4,20 @@
 
 #define TICK 10
 
-/* Forward declarations */
+/* ------------------------------------------------------------------------- */
+/* DATA STRUCTURES                                                           */
+/* ------------------------------------------------------------------------- */
+
+/* SensorData: 각 센서의 binary interpreted 상태를 저장 */
 
 typedef struct {
-    bool F;   
-    bool L;   
-    bool R;  
-    bool D; 
+    bool F;   /* Front obstacle sensor  */
+    bool L;   /* Left obstacle sensor   */
+    bool R;   /* Right obstacle sensor  */
+    bool D;   /* Dust detection sensor  */
 } SensorData;
 
+/* Wheel state enum */
 typedef enum{
     STOP,
     MOVE_FORWARD,
@@ -21,23 +26,26 @@ typedef enum{
     TURN_RIGHT
 } WheelState;
 
+/* Cleaner state enum */
 typedef enum {
     CLEANER_OFF,
     CLEANER_ON,
     CLEANER_UP
 } CleanerState;
 
-/* Motor/Cleaner command enums */
-
+/* Wheel motor command enum */
 enum MotorCommand {
     MOVE_FWD, MOVE_BACK, TURN_LEFT, TURN_RIGHT, STOP 
 };
 
+/* Cleaner actuator command enum */
 enum CleanerCommand {
     OFF, ON, UP
 };
 
-/* Function prototypes */
+/* ------------------------------------------------------------------------- */
+/* CONTROLLER INTERFACE                                                      */
+/* ------------------------------------------------------------------------- */
 
 WheelState WheelControl(WheelState wheel_state, 
                         SensorData obstacle_location, 
@@ -47,18 +55,17 @@ CleanerState CleanerControl(CleanerState cleaner_state,
                             SensorData dust_existence, 
                             bool cleaner_control_enable);
 
+/* Sensor-state determination */    
 SensorData DetermineObstacleLocation(bool F, bool L, bool R);
 SensorData DetermineDustExistence(bool D);
 
 /* Sensor interfaces */
-
 bool FrontSensorInterface(bool sensor_value);
 bool LeftSensorInterface(int analog_value);
 bool RightSensorInterface(int analog_value);
 bool DustSensorInterface(int analog_value);
 
 /* Actions */
-
 void MoveForward(bool enable_cleaner);
 void TurnLeft(void);
 void TurnRight(void);
@@ -67,14 +74,13 @@ void CleanerOff(void);
 void CleanerOn(void);
 void CleanerUp(void);
 
-// sensor input
+/* Raw sensor input functions */
 bool ReadFrontSensor(void);
 int ReadLeftSensor(void);
 int ReadRightSensor(void);
 int ReadDustSensor(void);
 
 int tickCount = 0;
-
 
 /* ------------------------------------------------------------------------- */
 /* MAIN LOOP                                                                 */
@@ -92,9 +98,18 @@ main (void)
 
     while (1)
     {
-        // TODO: function inputs
-        obstacle_location = DetermineObstacleLocation();
-        dust_existence = DetermineDustExistence();
+        bool rawF = ReadFrontSensor();
+        int rawL = ReadLeftSensor();
+        int rawR = ReadRightSensor();
+        int rawD = ReadDustSensor();
+
+        bool F = FrontSensorInterface(rawF);
+        bool L = LeftSensorInterface(rawL);
+        bool R = RightSensorInterface(rawR);
+        bool D = DustSensorInterface(rawD);
+
+        obstacle_location = DetermineObstacleLocation(F, L, R);
+        dust_existence = DetermineDustExistence(D);
         
         wheel_state = 
             WheelControl(wheel_state, obstacle_location, 
