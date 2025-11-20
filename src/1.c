@@ -224,7 +224,7 @@ WheelState Controller(SensorData data, WheelState wheelstate, CleanerCommand com
             break;
     }
     tickCount ++;
-    Clenaer(com);
+    Cleaner(com);
 
 
 }
