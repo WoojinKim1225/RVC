@@ -91,18 +91,29 @@ main (void)
     CleanerState cleaner_state = CLEANER_OFF;
 
     while (1)
-    {
-        // TODO: function inputs
-        obstacle_location = DetermineObstacleLocation();
-        dust_existence = DetermineDustExistence();
-        
+    {   
+        /* Step 1: Read logical sensor states */
+        bool frontsensor_value = ReadFrontSensor();
+        int leftsensor_value = ReadLeftSensor();
+        int rightsensor_value = ReadRightSensor();
+        int dustsensor_value = ReadDustSensor();
+
+        bool F = FrontSensorInterface(frontsensor_value);
+        bool L = LeftSensorInterface(leftsensor_value);
+        bool R = RightSensorInterface(rightsensor_value);
+        bool D = DustSensorInterface(dustsensor_value);
+
+        obstacle_location = DetermineObstacleLocation(F,L,R);
+        dust_existence = DetermineDustExistence(D);
+        /* Step 2: Run MotorController*/
         wheel_state = 
             WheelControl(wheel_state, obstacle_location, 
                             &cleaner_control_enable);
+        /* Step 3: Run Clean Controller*/
         cleaner_state = 
             CleanerControl(cleaner_state, dust_existence, 
                             cleaner_control_enable);
-
+        /* Step 4: Wait for next control tick */
         wait(TICK);
     }
 }
