@@ -3,39 +3,6 @@
 #include <stdbool.h>
 
 #define TICK 10
-
-/* ------------------------------------------------------------------------- */
-/* CONTROLLER INTERFACE                                                      */
-/* ------------------------------------------------------------------------- */
-
-WheelState Controller();
-
-/* Sensor-state determination */
-SensorData DetermineObstacleLocation();
-SensorData DetermineDustExistence();
-SensorData Merge_Sensordata();
-
-/* Sensor interface */
-bool FrontSensorInterface();
-bool LeftSensorInterface();
-bool RightSensorInterface();
-bool DustSensorInterface();
-
-/* Actuators */
-MotorCommand MoveForward(bool enable);
-MotorCommand TurnLeft();
-MotorCommand TurnRight();
-MotorCommand MoveBackward(bool enable);
-void Cleaner(CleanerCommand com);
-
-int tickCount = 0;
-/* Raw sensor input functions */
-bool ReadFrontSensor();
-int ReadLeftSensor();
-int ReadRightSensor();
-int ReadDustSensor();
-
-
 /* ------------------------------------------------------------------------- */
 /* DATA STRUCTURES                                                           */
 /* ------------------------------------------------------------------------- */
@@ -63,14 +30,47 @@ typedef enum {
     ON,
     UP
 } CleanerCommand;
-typedef enum{
-    STOP,
-    MOVE_FORWARD,
-    MOVE_BACK,
-    TURN_LEFT,
-    TURN_RIGHT,
-    MOVE_FORWARD_UP
+typedef enum {
+    W_STOP,
+    W_MOVE_FORWARD,
+    W_MOVE_BACK,
+    W_TURN_LEFT,
+    W_TURN_RIGHT,
+    W_MOVE_FORWARD_UP
 } WheelState;
+
+/* ------------------------------------------------------------------------- */
+/* CONTROLLER INTERFACE                                                      */
+/* ------------------------------------------------------------------------- */
+
+WheelState Controller(SensorData data, WheelState wheelstate, CleanerCommand* com1);
+
+/* Sensor-state determination */
+SensorData DetermineObstacleLocation(bool F, bool L,bool R);
+SensorData DetermineDustExistence(bool D);
+SensorData Merge_Sensordata(SensorData obstacle, SensorData dust);
+
+/* Sensor interface */
+bool FrontSensorInterface(bool frontsensor_input);
+bool LeftSensorInterface(int Leftsensor_input);
+bool RightSensorInterface(int rightsensor_input);
+bool DustSensorInterface(int dustsensor_input );
+
+/* Actuators */
+MotorCommand MoveForward(bool enable);
+MotorCommand TurnLeft();
+MotorCommand TurnRight();
+MotorCommand MoveBackward(bool enable);
+void Cleaner(CleanerCommand com);
+
+int tickCount = 0;
+/* Raw sensor input functions */
+bool ReadFrontSensor();
+int ReadLeftSensor();
+int ReadRightSensor();
+int ReadDustSensor();
+
+
 
 /* ------------------------------------------------------------------------- */
 /* SENSOR INTERFACE IMPLEMENTATION                                           */
@@ -127,106 +127,104 @@ Merge_Sensordata(SensorData obstacle, SensorData dust){
 /*   - 장애물 여부에 따라 이동 방향 결정                                      */
 /*   - 먼지가 존재하면 Cleaner UP 출력                                        */
 /* ------------------------------------------------------------------------- */
-WheelState Controller(SensorData data, WheelState wheelstate, CleanerCommand com1){
+WheelState Controller(SensorData data, WheelState wheelstate, CleanerCommand* com){
     bool F = data.F;
     bool L = data.L;
     bool D = data.D;
     bool R = data.R;
-    CleanerCommand com = com1;
     switch(wheelstate){
-        case STOP:
+        case W_STOP:
             if (F && L && R){
                 MoveBackward(true);
                 tickCount = 0;
-                return MOVE_BACK;
+                return W_MOVE_BACK;
             }else if(!F && D){
                 MoveForward(true);
                 tickCount = 0;
-                com = UP;
-                return MOVE_FORWARD_UP;
+                *com = UP;
+                return W_MOVE_FORWARD_UP;
             }else if(F && !R && L){
                 TurnRight();
                 tickCount = 0;
-                return TURN_RIGHT;
+                return W_TURN_RIGHT;
             }else if(!F){
-                MoveForward();
+                MoveForward(true);
                 tickCount = 0;
-                com = ON;
-                return MOVE_FORWARD
+                *com = ON;
+                return W_MOVE_FORWARD;
             }else if(F && !L){
                 TurnLeft();
                 tickCount = 0;
-                return TURN_LEFT;
+                return W_TURN_LEFT;
             }
             break;
-        case MOVE_FORWARD:
+        case W_MOVE_FORWARD:
             if (F){
                 MoveBackward(false);
                 tickCount = 0;
-                com = OFF;
-                return STOP;
+                *com = OFF;
+                return W_STOP;
             }else if(D){
-                com = UP;
+                *com = UP;
                 tickCount = 0;
-                return MOVE_FORWARD_UP;
+                return W_MOVE_FORWARD_UP;
             }
             break;
-        case MOVE_BACK:
+        case W_MOVE_BACK:
             if (!L){
                 MoveBackward(false);
                 TurnLeft();
                 tickCount = 0;
-                return TURN_LEFT;
+                return W_TURN_LEFT;
             }else if(!R){
                 MoveBackward(false);
                 TurnRight();
                 tickCount = 0;
-                return TURN_RIGHT;
+                return W_TURN_RIGHT;
             }
             break;
-        case TURN_LEFT:
+        case W_TURN_LEFT:
             if (!D && tickCount >= 5){
                 MoveForward(true);
-                com = ON;
+                *com = ON;
                 tickCount = 0;
-                return MOVE_FORWARD;
+                return W_MOVE_FORWARD;
             }else if(D && tickCount >= 5){
                 MoveForward(true);
-                com = UP;
+                *com = UP;
                 tickCount = 0;
-                return MOVE_FORWARD_UP;
+                return W_MOVE_FORWARD_UP;
             }
             break;
-        case TURN_RIGHT:
+        case W_TURN_RIGHT:
             if (!D && tickCount >= 5){
                 MoveForward(true);
-                com = ON;
+                *com = ON;
                 tickCount = 0;
-                return MOVE_FORWARD;
+                return W_MOVE_FORWARD;
             }else if(D && tickCount >= 5){
                 MoveForward(true);
-                com = UP;
+                *com = UP;
                 tickCount = 0;
-                return MOVE_FORWARD_UP;
+                return W_MOVE_FORWARD_UP;
             }
             break;
-        case MOVE_FORWARD_UP:
+        case W_MOVE_FORWARD_UP:
             if (F){
                 MoveForward(false);
-                com = OFF;
+                *com = OFF;
                 tickCount = 0;
-                return STOP;
+                return W_STOP;
             }else if(tickCount >= 5){
-                com = ON;
+                *com = ON;
                 tickCount = 0;
-                return MOVE_FORWARD;
+                return W_MOVE_FORWARD;
             }
             break;
     }
     tickCount ++;
-    Cleaner(com);
-
-
+    return wheelstate;
+    
 }
 
 
@@ -235,14 +233,13 @@ WheelState Controller(SensorData data, WheelState wheelstate, CleanerCommand com
 /* MAIN LOOP                                                                  */
 /* ------------------------------------------------------------------------- */
 
-void 
-main(void)
+int main(void)
 {
     SensorData obstacle_Location;
     SensorData dust_Existence;
     SensorData merged_data;
-    CleanerCommand cleaner_com;
-    WheelState wheelstate = STOP;
+    CleanerCommand cleaner_com = OFF;
+    WheelState wheelstate = W_STOP;
 
     while (1)
     {
@@ -264,9 +261,10 @@ main(void)
         merged_data = Merge_Sensordata(obstacle_Location, dust_Existence);
 
         /* Step 3: Compute actuator commands */
-        wheelstate = Controller(merged_data, wheelstate);
-
+        wheelstate = Controller(merged_data, wheelstate, &cleaner_com);
+        Cleaner(cleaner_com);
         /* Step 4: Wait for next control tick */
         wait(TICK);
     }
+    return 0;
 }
