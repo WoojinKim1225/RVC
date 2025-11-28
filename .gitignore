@@ -1,0 +1,31 @@
+# CMake and build artifacts
+build/
+**/build/
+[Bb]uild/
+**/[Bb]uild/
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+CTestTestfile.cmake
+compile_commands.json
+Makefile
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic/Static Libraries
+*.so
+*.lib
+*.a
+*.dll
+*.exe
+
+# Visual Studio Code
+.vscode/
