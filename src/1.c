@@ -233,6 +233,7 @@ WheelState Controller(SensorData data, WheelState wheelstate, CleanerCommand* co
 /* MAIN LOOP                                                                  */
 /* ------------------------------------------------------------------------- */
 
+#ifdef UNIT_TEST
 int main(void)
 {
     SensorData obstacle_Location;
@@ -268,3 +269,4 @@ int main(void)
     }
     return 0;
 }
+#endif
