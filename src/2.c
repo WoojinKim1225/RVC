@@ -1,97 +1,38 @@
-#include <stdio.h>  
-#include <stdlib.h> 
+#include <stdio.h>
+#include <stdlib.h>
 #include <stdbool.h>
+#include "../include/rvc.h"
 
 #define TICK 10
 
-/* Forward declarations */
-
-typedef struct {
-    bool F;   
-    bool L;   
-    bool R;  
-    bool D; 
-} SensorData;
-
-typedef enum{
-    STOP,
-    MOVE_FORWARD,
-    MOVE_BACK,
-    TURN_LEFT,
-    TURN_RIGHT
-} WheelState;
-
-typedef enum {
-    CLEANER_OFF,
-    CLEANER_ON,
-    CLEANER_UP
-} CleanerState;
-
-/* Motor/Cleaner command enums */
-
-enum MotorCommand {
-    MOVE_FWD, MOVE_BACK, TURN_LEFT, TURN_RIGHT, STOP 
-};
-
-enum CleanerCommand {
-    OFF, ON, UP
-};
-
-/* Function prototypes */
-
-WheelState WheelControl(WheelState wheel_state, 
-                        SensorData obstacle_location, 
-                        bool* cleaner_control_enable);
-
-CleanerState CleanerControl(CleanerState cleaner_state, 
-                            SensorData dust_existence, 
-                            bool cleaner_control_enable);
-
-SensorData DetermineObstacleLocation(bool F, bool L, bool R);
-SensorData DetermineDustExistence(bool D);
-
-/* Sensor interfaces */
-
-bool FrontSensorInterface(bool sensor_value);
-bool LeftSensorInterface(int analog_value);
-bool RightSensorInterface(int analog_value);
-bool DustSensorInterface(int analog_value);
-
-/* Actions */
-
-void MoveForward(bool enable_cleaner);
-void TurnLeft(void);
-void TurnRight(void);
-void MoveBackward(void);
-void CleanerOff(void);
-void CleanerOn(void);
-void CleanerUp(void);
-
-// sensor input
-bool ReadFrontSensor(void);
-int ReadLeftSensor(void);
-int ReadRightSensor(void);
-int ReadDustSensor(void);
-
 int tickCount = 0;
 
+/* This function is defined in test_stubs.c for testing purposes. */
+void wait(int ticks);
+
+/* Actuator interface functions from rvc.h that are used in this file */
+MotorCommand MoveForward(bool enable);
+MotorCommand MoveBackward(bool enable);
+MotorCommand TurnLeft();
+MotorCommand TurnRight();
+void Cleaner(CleanerCommand com);
 
 /* ------------------------------------------------------------------------- */
 /* MAIN LOOP                                                                 */
 /* ------------------------------------------------------------------------- */
 
-int
-main (void)
+#ifndef UNIT_TEST
+int main(void)
 {
     SensorData obstacle_location;
     SensorData dust_existence;
 
     bool cleaner_control_enable = false;
-    WheelState wheel_state = STOP;
+    WheelState wheel_state = W_STOP;
     CleanerState cleaner_state = CLEANER_OFF;
 
     while (1)
-    {   
+    {
         /* Step 1: Read logical sensor states */
         bool frontsensor_value = ReadFrontSensor();
         int leftsensor_value = ReadLeftSensor();
@@ -103,49 +44,53 @@ main (void)
         bool R = RightSensorInterface(rightsensor_value);
         bool D = DustSensorInterface(dustsensor_value);
 
-        obstacle_location = DetermineObstacleLocation(F,L,R);
+        obstacle_location = DetermineObstacleLocation(F, L, R);
         dust_existence = DetermineDustExistence(D);
         /* Step 2: Run MotorController*/
-        wheel_state = 
-            WheelControl(wheel_state, obstacle_location, 
-                            &cleaner_control_enable);
+        wheel_state =
+            WheelControl(wheel_state, obstacle_location,
+                         &cleaner_control_enable);
         /* Step 3: Run Clean Controller*/
-        cleaner_state = 
-            CleanerControl(cleaner_state, dust_existence, 
-                            cleaner_control_enable);
+        cleaner_state =
+            CleanerControl(cleaner_state, dust_existence,
+                           cleaner_control_enable);
         /* Step 4: Wait for next control tick */
         wait(TICK);
     }
 }
+#endif /* UNIT_TEST */
 
 /* ------------------------------------------------------------------------- */
 /* SENSOR INTERFACES                                                         */
 /* ------------------------------------------------------------------------- */
 
-bool 
-FrontSensorInterface (bool sensor_value){
+bool FrontSensorInterface(bool sensor_value)
+{
     return sensor_value;
 }
 
-bool 
-LeftSensorInterface (int analog_value){
-    if (analog_value < 100){
+bool LeftSensorInterface(int analog_value)
+{
+    if (analog_value < 100)
+    {
         return true;
     }
     return false;
 }
 
-bool 
-RightSensorInterface (int analog_value){
-    if (analog_value < 100){
+bool RightSensorInterface(int analog_value)
+{
+    if (analog_value < 100)
+    {
         return true;
     }
     return false;
 }
 
-bool 
-DustSensorInterface (int analog_value){
-    if (analog_value > 600){
+bool DustSensorInterface(int analog_value)
+{
+    if (analog_value > 600)
+    {
         return true;
     }
     return false;
@@ -155,14 +100,16 @@ DustSensorInterface (int analog_value){
 /* DETERMINE SENSOR STATES                                                   */
 /* ------------------------------------------------------------------------- */
 
-SensorData 
-DetermineObstacleLocation (bool F, bool L, bool R){
-    SensorData data = {F,L,R,false};
+SensorData
+DetermineObstacleLocation(bool F, bool L, bool R)
+{
+    SensorData data = {F, L, R, false};
     return data;
 }
 
-SensorData 
-DetermineDustExistence (bool D){
+SensorData
+DetermineDustExistence(bool D)
+{
     SensorData data = {false, false, false, D};
     return data;
 }
@@ -172,69 +119,71 @@ DetermineDustExistence (bool D){
 /* ------------------------------------------------------------------------- */
 
 WheelState
-WheelControl (WheelState wheel_state, SensorData obstacle_location, bool * cleaner_control_enable)
+WheelControl(WheelState wheel_state, SensorData obstacle_location, bool *cleaner_control_enable)
 {
-    bool F = obstacle_location.F;           
-    bool L = obstacle_location.L;            
-    bool R = obstacle_location.R;    
+    bool F = obstacle_location.F;
+    bool L = obstacle_location.L;
+    bool R = obstacle_location.R;
 
-    switch(wheel_state){
-        case STOP:
-            if(F && !L){
-                TurnLeft();
-                tickCount = 0;
-                return TURN_LEFT;
-            }
-            if (F && L && R){
-                MoveBackward();
-                tickCount = 0;
-                return MOVE_BACK;
-            }
-            if (!F){
-                MoveForward(true);
-                *cleaner_control_enable = true;
-                tickCount = 0;
-                return MOVE_FORWARD;
-            }
-            if (F && !R && L){
-                TurnRight();
-                tickCount = 0;
-                return TURN_RIGHT;
-            }
+    switch (wheel_state)
+    {
+    case W_STOP:
+        if (F && !L)
+        {
+            TurnLeft();
+            tickCount = 0;
+            return W_TURN_LEFT;
+        }
+        if (F && L && R)
+        {
+            MoveBackward(true);
+            tickCount = 0;
+            return W_MOVE_BACK;
+        }
+        if (!F)
+        {
+            MoveForward(true);
+            *cleaner_control_enable = true;
+            tickCount = 0;
+            return W_MOVE_FORWARD;
+        }
+        if (F && !R && L)
+        {
+            TurnRight();
+            tickCount = 0;
+            return W_TURN_RIGHT;
+        }
         break;
-        case MOVE_FORWARD:
-            if(F){
-                MoveForward(false);
-                *cleaner_control_enable= false;
-                tickCount = 0;
-                return STOP;
-            }
+    case W_MOVE_FORWARD:
+        if (F)
+        {
+            MoveForward(false);
+            *cleaner_control_enable = false;
+            tickCount = 0;
+            return W_STOP;
+        }
         break;
-        case MOVE_BACK:
-            if (tickCount >= 5){
-                TurnLeft();
-                tickCount = 0;
-                return TURN_LEFT;
-            }
+    case W_MOVE_BACK:
+        if (tickCount >= 5)
+        {
+            MoveBackward(false);
+            TurnLeft();
+            tickCount = 0;
+            return W_TURN_LEFT;
+        }
         break;
-        case TURN_LEFT:
-            if (tickCount >= 5){
-                MoveForward(true);
-                *cleaner_control_enable = true;
-                tickCount = 0;
-                return MOVE_FORWARD;
-            }
-        break;
-        case TURN_RIGHT:
-            if (tickCount >= 5){
-                MoveForward(true);
-                *cleaner_control_enable = true;
-                tickCount = 0;
-                return MOVE_FORWARD;
-            }
+    case W_TURN_LEFT:
+        if (tickCount >= 5)
+        {
+            MoveForward(true);
+            *cleaner_control_enable = true;
+            tickCount = 0;
+            return W_MOVE_FORWARD;
+        }
         break;
     }
     tickCount++;
+    return wheel_state;
 }
 
 /* ------------------------------------------------------------------------- */
@@ -244,35 +193,40 @@ WheelControl (WheelState wheel_state, SensorData obstacle_location, bool * clean
 CleanerState
 CleanerControl(CleanerState cleaner_state, SensorData dust_existence, bool cleaner_control_enable)
 {
-    switch (cleaner_state) 
+    switch (cleaner_state)
     {
-        case CLEANER_OFF:
-            if (cleaner_control_enable) {
-                CleanerOn();
-                return CLEANER_ON;
-            }
+    case CLEANER_OFF:
+        if (cleaner_control_enable)
+        {
+            Cleaner(ON);
+            return CLEANER_ON;
+        }
         break;
-        case CLEANER_ON:
-            if (dust_existence.D) {
-                CleanerUp();
-                return CLEANER_UP;
-            }
-            if (!cleaner_control_enable) {
-                CleanerOff();
-                return CLEANER_OFF;
-            }
+    case CLEANER_ON:
+        if (dust_existence.D)
+        {
+            Cleaner(UP);
+            return CLEANER_UP;
+        }
+        if (!cleaner_control_enable)
+        {
+            Cleaner(OFF);
+            return CLEANER_OFF;
+        }
         break;
-        case CLEANER_UP:
-            if (!dust_existence.D) {
-                CleanerOn();
-                return CLEANER_ON;
-            }
-            if (!cleaner_control_enable) {
-                CleanerOff();
-                return CLEANER_OFF;
-            }
+    case CLEANER_UP:
+        if (!dust_existence.D)
+        {
+            Cleaner(ON);
+            return CLEANER_ON;
+        }
+        if (!cleaner_control_enable)
+        {
+            Cleaner(OFF);
+            return CLEANER_OFF;
+        }
         break;
     }
-    // cleaner state가 안바뀌므로, 기존의 스테이트를 return.
+    // If the cleaner state does not change, return the current state.
     return cleaner_state;
 }
