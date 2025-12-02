@@ -48,6 +48,9 @@ target_link_libraries(test_wjk PRIVATE GTest::gtest_main)
 gtest_discover_tests(test_wjk)
 
 # --- 테스트 3: test_dust ---
-add_executable(test_dust my_tests.cpp)
+add_executable(test_dust 
+my_tests.cpp
+src/1.c
+)
 target_link_libraries(test_dust PRIVATE GTest::gtest_main)
 gtest_discover_tests(test_dust)

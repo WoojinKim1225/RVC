@@ -34,31 +34,3 @@ int ReadDustSensor()
     return stub_dust_input;
 }
 
-MotorCommand MoveForward(bool enable)
-{
-    lastMotorCommand = MOVE_FWD;
-    return MOVE_FWD;
-}
-
-MotorCommand MoveBackward(bool enable)
-{
-    lastMotorCommand = MOVE_BACK;
-    return MOVE_BACK;
-}
-
-MotorCommand TurnLeft()
-{
-    lastMotorCommand = TURN_LEFT;
-    return TURN_LEFT;
-}
-
-MotorCommand TurnRight()
-{
-    lastMotorCommand = TURN_RIGHT;
-    return TURN_RIGHT;
-}
-
-void Cleaner(CleanerCommand com)
-{
-    lastCleanerCommand = com;
-}
