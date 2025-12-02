@@ -18,8 +18,8 @@ FetchContent_MakeAvailable(googletest)
 
 # 테스트 실행 파일 정의
 add_executable(unit_test
-    unit_test.cpp
     moak_fun.cpp
+    test/unit_test.cpp
     src/1.c
 )
 

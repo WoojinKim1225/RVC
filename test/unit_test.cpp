@@ -29,6 +29,10 @@ TEST(Unit_SensorInterface, LeftSensor_ReturnsObstacleIfLessThan100) {
 
     stub_left_input = 150;  // no obstacle
     EXPECT_FALSE( LeftSensorInterface(ReadLeftSensor()) );
+
+    stub_left_input = 100; // 기준점
+    EXPECT_FALSE( LeftSensorInterface(ReadLeftSensor()) );
+
 }
 
 /* --------------------------------------------------------- */
@@ -40,6 +44,9 @@ TEST(Unit_SensorInterface, RightSensor_ReturnsObstacleIfLessThan100) {
 
     stub_right_input = 140;  // no obstacle
     EXPECT_FALSE( RightSensorInterface(ReadRightSensor()) );
+
+    stub_right_input = 100; // 기준점
+    EXPECT_FALSE( RightSensorInterface(ReadLeftSensor()) );
 }
 
 /* --------------------------------------------------------- */
@@ -50,6 +57,9 @@ TEST(Unit_SensorInterface, DustSensor_ReturnsTrueIfGreaterThan600) {
     EXPECT_TRUE( DustSensorInterface(ReadDustSensor()) );
 
     stub_dust_input = 400;  // no dust
+    EXPECT_FALSE( DustSensorInterface(ReadDustSensor()) );
+
+    stub_dust_input = 600;  // 기준점
     EXPECT_FALSE( DustSensorInterface(ReadDustSensor()) );
 }
 
