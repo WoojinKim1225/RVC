@@ -7,17 +7,6 @@
 
 int tickCount = 0;
 
-typedef enum
-{
-    CLEANER_OFF,
-    CLEANER_ON,
-    CLEANER_UP
-} CleanerState;
-
-/* Function Prototypes */
-WheelState WheelControl(WheelState wheel_state, SensorData obstacle_location, bool *cleaner_control_enable);
-CleanerState CleanerControl(CleanerState cleaner_state, SensorData dust_existence, bool cleaner_control_enable);
-
 /* This function is defined in test_stubs.c for testing purposes. */
 void wait(int ticks);
 

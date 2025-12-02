@@ -49,6 +49,17 @@ extern "C"
         W_MOVE_FORWARD_UP
     } WheelState;
 
+    typedef enum
+    {
+        CLEANER_OFF,
+        CLEANER_ON,
+        CLEANER_UP
+    } CleanerState;
+
+    /* FSMs from 2.c */
+    extern WheelState WheelControl(WheelState wheel_state, SensorData obstacle_location, bool *cleaner_control_enable);
+    extern CleanerState CleanerControl(CleanerState cleaner_state, SensorData dust_existence, bool cleaner_control_enable);
+
     /* ------------------------------------------------------------------------- */
     /* CONTROLLER INTERFACE                                                      */
     /* ------------------------------------------------------------------------- */
