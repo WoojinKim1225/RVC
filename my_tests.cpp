@@ -1,6 +1,6 @@
 #include "gtest/gtest.h"
 #include <stdbool.h>
-
+#include "include/rvc.h"
 // =========================================================================
 // 1. 테스트 대상 함수 정의 (임시)
 //
@@ -9,64 +9,46 @@
 // 테스트를 위해 C++ 파일 내에 C 스타일로 임시 정의합니다.
 
 // C++ 컴파일러가 이 함수를 C 스타일 링크 이름으로 처리하도록 지시합니다.
-extern "C"
-{
-    /**
-     * @brief 두 정수를 더하는 C 함수
-     * @param a 첫 번째 정수
-     * @param b 두 번째 정수
-     * @return 두 수의 합
-     *
-    *int Add(int a, int b)
-    {
-        return a + b;
-    }*/
-    typedef enum{
-        MOVE_FWD,
-        MOVE_BACK,
-        TURN_LEFT,
-        TURN_RIGHT,
-        STOP
-    } MotorCommand;
-    //test용 stub 구현(하드웨어 Moveforward)
-    MotorCommand MoveForward(bool enable)
-    {
-        if (enable)
-            return MOVE_FWD;
-        else
-            return STOP;
-    }
-    //test용 stub 구현(하드웨어 Turnleft)
-    MotorCommand TurnLeft(){
-        return TURN_LEFT;
-    }
-    //test용 stub 구현(하드웨어 Turnright)
-    MotorCommand TurnRight(){
-        return TURN_RIGHT;
-    }
-    //test용 stub구현(하드웨어 Movebackward)
-    MotorCommand MoveBackward(bool enable){
-        if(enable){
-            return MOVE_BACK;
-        }
-        else{
-            return STOP;
-        }
-    }
-    typedef struct{
-        bool F;
-        bool L;
-        bool R;
-        bool D;
-} SensorData;
+// extern "C"
+// {
+//     /**
+//      * @brief 두 정수를 더하는 C 함수
+//      * @param a 첫 번째 정수
+//      * @param b 두 번째 정수
+//      * @return 두 수의 합
+//      *
+//     *int Add(int a, int b)
+//     {
+//         return a + b;
+//     }*/
+//     typedef enum{
+//         MOVE_FWD,
+//         MOVE_BACK,
+//         TURN_LEFT,
+//         TURN_RIGHT,
+//         STOP
+//     } MotorCommand;
+//     //test용 stub 구현(하드웨어 Moveforward)
+    
+//     typedef struct{
+//         bool F;
+//         bool L;
+//         bool R;
+//         bool D;
+//     } SensorData;
 
-SensorData DetermineDustExistence(bool D)
-{
-    SensorData data = {false, false, false, D};
-    return data;
-}}
+//     SensorData DetermineDustExistence(bool D)
+//     {
+//         SensorData data = {false, false, false, D};
+//         return data;
+//     }
+// }
 // =========================================================================
-
+extern SensorData DetermineDustExistence();
+extern MotorCommand MoveForward();
+extern MotorCommand MoveBackward();
+extern MotorCommand TurnLefti();
+extern MotorCommand TurnRight();
 // 2. GTest 테스트 케이스 정의
 
 // TEST(TestSuiteName, TestName) 매크로를 사용하여 테스트 함수를 정의합니다.

@@ -228,7 +228,30 @@ WheelState Controller(SensorData data, WheelState wheelstate, CleanerCommand* co
 }
 
 
-
+MotorCommand MoveForward(bool enable)
+    {
+        if (enable)
+            return MOVE_FWD;
+        else
+            return STOP;
+    }
+    //test용 stub 구현(하드웨어 Turnleft)
+    MotorCommand TurnLeft(){
+        return TURN_LEFT;
+    }
+    //test용 stub 구현(하드웨어 Turnright)
+    MotorCommand TurnRight(){
+        return TURN_RIGHT;
+    }
+    //test용 stub구현(하드웨어 Movebackward)
+    MotorCommand MoveBackward(bool enable){
+        if(enable){
+            return MOVE_BACK;
+        }
+        else{
+            return STOP;
+        }
+    }
 /* ------------------------------------------------------------------------- */
 /* MAIN LOOP                                                                  */
 /* ------------------------------------------------------------------------- */
