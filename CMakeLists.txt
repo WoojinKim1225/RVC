@@ -1,28 +1,36 @@
-# CMake 버전 설정
 cmake_minimum_required(VERSION 3.14)
-project(MyGTestProject LANGUAGES CXX)
+project(RVC1 CXX C)
 
-# --- GoogleTest 통합 (FetchContent 사용) ---
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
+
+# GoogleTest 다운로드 & 빌드
 include(FetchContent)
 FetchContent_Declare(
   googletest
   URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
 )
-# For Windows: Prevent overriding the parent project's compiler/linker settings
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
-# --- CTest 설정 ---
-include(CTest)
 enable_testing()
 
-# 테스트 실행 파일 정의
-add_executable(my_unit_tests my_tests.cpp)
+# 테스트 소스
+add_executable(test_dust
+    my_tests.cpp
+)
 
-# 테스트 실행 파일을 GoogleTest와 링크
-target_link_libraries(my_unit_tests PUBLIC gtest_main)
+# 여기가 핵심!
+target_link_libraries(test_dust
+    gtest
+    gtest_main
+    pthread
+)
 
-# CTest가 GoogleTest의 테스트들을 자동으로 찾도록 설정
+# 여기 추가하면 include 경로 자동 연결됨 (너에게 가장 중요한 줄)
+target_include_directories(test_dust PUBLIC
+    ${gtest_SOURCE_DIR}/include
+    ${gmock_SOURCE_DIR}/include
+)
+
 include(GoogleTest)
-gtest_discover_tests(my_unit_tests)
-
+gtest_discover_tests(test_dust)
