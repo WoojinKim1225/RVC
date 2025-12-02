@@ -36,15 +36,16 @@ target_link_libraries(unit_test PRIVATE GTest::gtest_main)
 gtest_discover_tests(unit_test)
 
 # --- 테스트 2: test_wjk ---
-# add_executable(test_wjk 
-#     tests/test_wjk.cpp
-#     src/1.c
-#     tests/test_stubs.c
-# )
-# # 테스트 빌드 시에만 UNIT_TEST 매크로를 정의하여 스텁 함수를 활성화합니다.
-# target_compile_definitions(test_wjk PRIVATE UNIT_TEST)
-# target_link_libraries(test_wjk PRIVATE GTest::gtest_main)
-# gtest_discover_tests(test_wjk)
+add_executable(test_wjk 
+    tests/test_stubs.c
+    src/1.c
+    tests/test_wjk.cpp
+)
+# 테스트 빌드 시에만 UNIT_TEST 매크로를 정의하여 스텁 함수를 활성화합니다.
+target_include_directories(unit_test PUBLIC include)
+#target_compile_definitions(test_wjk PRIVATE UNIT_TEST)
+target_link_libraries(test_wjk PRIVATE GTest::gtest_main)
+gtest_discover_tests(test_wjk)
 
 # --- 테스트 3: test_dust ---
 add_executable(test_dust 
