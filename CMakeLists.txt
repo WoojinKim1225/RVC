@@ -54,3 +54,12 @@ src/1.c
 )
 target_link_libraries(test_dust PRIVATE GTest::gtest_main)
 gtest_discover_tests(test_dust)
+# --- 테스트 4: integration test ---
+add_executable(inte_test 
+test/integration_test.cpp
+src/1.c
+moak_fun.cpp
+)
+target_include_directories(inte_test PUBLIC include)
+target_link_libraries(inte_test PRIVATE GTest::gtest_main)
+gtest_discover_tests(inte_test)
