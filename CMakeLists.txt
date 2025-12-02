@@ -12,6 +12,22 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(googletest)
 
+# --- CTest 설정 ---
+# include(CTest)
+# enable_testing()
+
+# 테스트 실행 파일 정의
+add_executable(unit_test
+    moak_fun.cpp
+    test/unit_test.cpp
+    src/1.c
+)
+
+# include 디렉토리 연결
+target_include_directories(unit_test PUBLIC include)
+
+# 테스트 실행 파일을 GoogleTest와 링크
+target_link_libraries(unit_test
 enable_testing()
 
 # 테스트 소스
@@ -33,7 +49,7 @@ target_include_directories(test_dust PUBLIC
 )
 
 include(GoogleTest)
-gtest_discover_tests(my_unit_tests)
+gtest_discover_tests(unit_test)
 
 # testwjk 테스트 추가 (testwjk.cpp 소스 파일 필요)
 # add_executable(<실행파일_이름> [소스1] [소스2] ...)

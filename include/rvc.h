@@ -8,91 +8,76 @@ extern "C"
 
 #include <stdbool.h>
 
-    /* ------------------------------------------------------------------------- */
-    /* DATA STRUCTURES                                                           */
-    /* ------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------- */
+/* DATA STRUCTURES                                                           */
+/* ------------------------------------------------------------------------- */
 
-    typedef struct
-    {
-        bool F; /* Front obstacle sensor  */
-        bool L; /* Left obstacle sensor   */
-        bool R; /* Right obstacle sensor  */
-        bool D; /* Dust detection sensor  */
-    } SensorData;
+typedef struct {
+    bool F;   /* Front obstacle sensor  */
+    bool L;   /* Left obstacle sensor   */
+    bool R;   /* Right obstacle sensor  */
+    bool D;   /* Dust detection sensor  */
+} SensorData;
 
-    /* Wheel motor command enum */
-    typedef enum
-    {
-        MOVE_FWD,
-        MOVE_BACK,
-        TURN_LEFT,
-        TURN_RIGHT,
-        STOP
-    } MotorCommand;
+/* Wheel motor command enum */
+typedef enum {
+    MOVE_FWD,
+    MOVE_BACK,
+    TURN_LEFT,
+    TURN_RIGHT,
+    STOP
+} MotorCommand;
 
-    /* Cleaner actuator command enum */
-    typedef enum
-    {
-        OFF,
-        ON,
-        UP
-    } CleanerCommand;
+/* Cleaner actuator command enum */
+typedef enum {
+    OFF,
+    ON,
+    UP
+} CleanerCommand;
 
-    /* WheelState: FSM states */
-    typedef enum
-    {
-        W_STOP,
-        W_MOVE_FORWARD,
-        W_MOVE_BACK,
-        W_TURN_LEFT,
-        W_TURN_RIGHT,
-        W_MOVE_FORWARD_UP
-    } WheelState;
+/* WheelState: FSM states */
+typedef enum {
+    W_STOP,
+    W_MOVE_FORWARD,
+    W_MOVE_BACK,
+    W_TURN_LEFT,
+    W_TURN_RIGHT,
+    W_MOVE_FORWARD_UP
+} WheelState;
 
-    typedef enum
-    {
-        CLEANER_OFF,
-        CLEANER_ON,
-        CLEANER_UP
-    } CleanerState;
+/* ------------------------------------------------------------------------- */
+/* CONTROLLER INTERFACE                                                      */
+/* ------------------------------------------------------------------------- */
 
-    /* FSMs from 2.c */
-    extern WheelState WheelControl(WheelState wheel_state, SensorData obstacle_location, bool *cleaner_control_enable);
-    extern CleanerState CleanerControl(CleanerState cleaner_state, SensorData dust_existence, bool cleaner_control_enable);
+/* FSM */
+extern WheelState Controller(SensorData data, WheelState wheelstate, CleanerCommand* com);
 
-    /* ------------------------------------------------------------------------- */
-    /* CONTROLLER INTERFACE                                                      */
-    /* ------------------------------------------------------------------------- */
+/* Sensor-state determination */
+extern SensorData DetermineObstacleLocation(bool F, bool L, bool R);
+extern SensorData DetermineDustExistence(bool D);
+extern SensorData Merge_Sensordata(SensorData obstacle, SensorData dust);
 
-    /* FSM */
-    extern WheelState Controller(SensorData data, WheelState wheelstate, CleanerCommand *com);
+/* Sensor interface */
+extern bool FrontSensorInterface(bool frontsensor_input);
+extern bool LeftSensorInterface(int Leftsensor_input);
+extern bool RightSensorInterface(int rightsensor_input);
+extern bool DustSensorInterface(int dustsensor_input);
 
-    /* Sensor-state determination */
-    extern SensorData DetermineObstacleLocation(bool F, bool L, bool R);
-    extern SensorData DetermineDustExistence(bool D);
-    extern SensorData Merge_Sensordata(SensorData obstacle, SensorData dust);
+/* Actuator interface (will be mocked in tests) */
+extern MotorCommand MoveForward(bool enable);
+extern MotorCommand MoveBackward(bool enable);
+extern MotorCommand TurnLeft();
+extern MotorCommand TurnRight();
+extern void Cleaner(CleanerCommand com);
 
-    /* Sensor interface */
-    extern bool FrontSensorInterface(bool frontsensor_input);
-    extern bool LeftSensorInterface(int Leftsensor_input);
-    extern bool RightSensorInterface(int rightsensor_input);
-    extern bool DustSensorInterface(int dustsensor_input);
+/* Sensor raw input functions (will be stubbed/mocked in tests) */
+extern bool ReadFrontSensor();
+extern int ReadLeftSensor();
+extern int ReadRightSensor();
+extern int ReadDustSensor();
 
-    /* Actuator interface (will be mocked in tests) */
-    extern MotorCommand MoveForward(bool enable);
-    extern MotorCommand MoveBackward(bool enable);
-    extern MotorCommand TurnLeft();
-    extern MotorCommand TurnRight();
-    extern void Cleaner(CleanerCommand com);
-
-    /* Sensor raw input functions (will be stubbed/mocked in tests) */
-    extern bool ReadFrontSensor();
-    extern int ReadLeftSensor();
-    extern int ReadRightSensor();
-    extern int ReadDustSensor();
-
-    /* Global tickCount */
-    extern int tickCount;
+/* Global tickCount */
+extern int tickCount;
 
 #ifdef __cplusplus
 }
