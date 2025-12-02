@@ -30,22 +30,5 @@ void wait(int ticks)
  * During tests, we don't control real hardware, so these provide
  * empty implementations or default return values to allow linking.
  */
-MotorCommand MoveForward(bool enable)
-{
-    (void)enable;
-    return MOVE_FWD;
-}
-MotorCommand MoveBackward(bool enable)
-{
-    (void)enable;
-    return MOVE_BACK;
-}
-MotorCommand TurnLeft()
-{
-    return TURN_LEFT;
-}
-MotorCommand TurnRight()
-{
-    return TURN_RIGHT;
-}
+
 void Cleaner(CleanerCommand com) { (void)com; }
