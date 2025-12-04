@@ -23,34 +23,42 @@ include(GoogleTest)
 # 테스트 실행 파일 정의
 # ==============================================================================
 
+
+# --- 공통 스텁 라이브러리 정의 ---
+# 모든 테스트에서 사용할 스텁 함수들을 모아 정적 라이브러리를 생성합니다.
+add_library(test_stubs STATIC
+    moak_fun.cpp
+    tests/test_stubs.c
+)
+# 스텁 라이브러리가 'include' 디렉토리를 참조하도록 설정합니다.
+target_include_directories(test_stubs PUBLIC include)
+
 # --- 테스트 1: unit_test ---
 add_executable(unit_test
-    moak_fun.cpp
     test/unit_test.cpp
     src/1.c
 )
-# 프로젝트의 'include' 디렉토리를 추가합니다.
-target_include_directories(unit_test PUBLIC include)
-# GTest::gtest_main을 링크하면 헤더 경로와 라이브러리가 자동으로 설정됩니다.
-target_link_libraries(unit_test PRIVATE GTest::gtest_main)
+target_compile_definitions(unit_test PRIVATE UNIT_TEST) # UNIT_TEST 매크로 정의
+target_include_directories(unit_test PUBLIC include) # 테스트 파일이 헤더를 찾을 수 있도록 경로 추가
+target_link_libraries(unit_test PRIVATE GTest::gtest_main test_stubs)
 gtest_discover_tests(unit_test)
 
 # --- 테스트 2: test_wjk ---
 add_executable(test_wjk 
-    tests/test_stubs.c
     src/1.c
     tests/test_wjk.cpp
 )
-# 테스트 빌드 시에만 UNIT_TEST 매크로를 정의하여 스텁 함수를 활성화합니다.
-target_include_directories(unit_test PUBLIC include)
-#target_compile_definitions(test_wjk PRIVATE UNIT_TEST)
-target_link_libraries(test_wjk PRIVATE GTest::gtest_main)
+target_compile_definitions(test_wjk PRIVATE UNIT_TEST) # UNIT_TEST 매크로 정의
+target_include_directories(test_wjk PUBLIC include) # 테스트 파일이 헤더를 찾을 수 있도록 경로 추가
+target_link_libraries(test_wjk PRIVATE GTest::gtest_main test_stubs)
 gtest_discover_tests(test_wjk)
 
 # --- 테스트 3: test_dust ---
 add_executable(test_dust 
-my_tests.cpp
-src/1.c
+    my_tests.cpp
+    src/1.c
 )
-target_link_libraries(test_dust PRIVATE GTest::gtest_main)
+target_compile_definitions(test_dust PRIVATE UNIT_TEST) # UNIT_TEST 매크로 정의
+target_include_directories(test_dust PUBLIC include) # 테스트 파일이 헤더를 찾을 수 있도록 경로 추가
+target_link_libraries(test_dust PRIVATE GTest::gtest_main test_stubs)
 gtest_discover_tests(test_dust)
