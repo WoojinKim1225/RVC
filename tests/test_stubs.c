@@ -1,10 +1,10 @@
 #include <stdbool.h>
 #include "../include/rvc.h"
 
-#define ON 127
-#define IDLE 64
-#define OFF 0
-#define REV -127
+#define SON 127
+#define SIDLE 64
+#define SOFF 0
+#define SREV -127
 
 /* Stub for the wait function */
 void rvc_wait(int ticks)
@@ -31,13 +31,13 @@ void Cleaner(CleanerCommand com)
     switch (com)
     {
     case OFF:
-        clean = OFF;
+        clean = SOFF;
         break;
     case ON:
-        clean = IDLE;
+        clean = SIDLE;
         break;
     case UP:
-        clean = ON;
+        clean = SON;
         break;
     }
 }
@@ -47,24 +47,24 @@ void Motor(MotorCommand cmd)
     switch (cmd)
     {
     case MOVE_FWD:
-        left = ON;
-        right = ON;
+        left = SON;
+        right = SON;
         break;
     case STOP:
-        left = OFF;
-        right = OFF;
+        left = SOFF;
+        right = SOFF;
         break;
     case MOVE_BACK:
-        left = REV;
-        right = REV;
+        left = SREV;
+        right = SREV;
         break;
     case TURN_LEFT:
-        left = REV;
-        right = ON;
+        left = SREV;
+        right = SON;
         break;
     case TURN_RIGHT:
-        left = REV;
-        right = ON;
+        left = SREV;
+        right = SON;
         break;
     }
 }

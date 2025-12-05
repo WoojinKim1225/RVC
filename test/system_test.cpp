@@ -39,15 +39,15 @@ extern int right;
 //     W_MOVE_FORWARD_UP
 // } WheelState;
 
-class system_test : public ::testing::Test {
-protected:
-    void SetUp() override {
-        tickCount = 0;
-        lastMotorCommand = MOVE_BACK;
-        lastCleanerCommand = OFF;
-    }
-};
-TEST_F(system_test, systemtest1) {
+// class system_test : public ::testing::Test {
+// protected:
+//     void SetUp() override {
+//         tickCount = 0;
+//         lastMotorCommand = MOVE_BACK;
+//         lastCleanerCommand = OFF;
+//     }
+// };
+TEST(system_test, systemtest1) {
     tickCount = 0;
     lastMotorCommand = MOVE_BACK;
     lastCleanerCommand = OFF;
@@ -79,7 +79,7 @@ TEST_F(system_test, systemtest1) {
     EXPECT_EQ(right, 127);
 
 }
-TEST_F(system_test, systemtest2) {
+TEST(system_test, systemtest2) {
     tickCount = 2;
     lastMotorCommand = MOVE_FWD;
     lastCleanerCommand = UP;
@@ -111,7 +111,7 @@ TEST_F(system_test, systemtest2) {
     EXPECT_EQ(right, 0);
 
 }
-TEST_F(system_test, systemtest3) {
+TEST(system_test, systemtest3) {
     tickCount = 3;
     lastMotorCommand = MOVE_FWD;
     lastCleanerCommand = UP;
@@ -143,7 +143,7 @@ TEST_F(system_test, systemtest3) {
     EXPECT_EQ(right, 0);
 
 }
-TEST_F(system_test, systemtest4) {
+TEST(system_test, systemtest4) {
     tickCount = 0;
     lastMotorCommand = MOVE_FWD;
     lastCleanerCommand = ON;
@@ -175,7 +175,7 @@ TEST_F(system_test, systemtest4) {
     EXPECT_EQ(right, 127);
 
 }
-TEST_F(system_test, systemtest5) {
+TEST(system_test, systemtest5) {
     tickCount = 0;
     lastMotorCommand = STOP;
     lastCleanerCommand = OFF;
@@ -207,7 +207,7 @@ TEST_F(system_test, systemtest5) {
     EXPECT_EQ(right, 127);
 
 }
-TEST_F(system_test, systemtest6) {
+TEST(system_test, systemtest6) {
     tickCount = 0;
     lastMotorCommand = MOVE_BACK;
     lastCleanerCommand = OFF;
