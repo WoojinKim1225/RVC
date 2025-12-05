@@ -42,6 +42,33 @@ void Cleaner(CleanerCommand com)
     }
 }
 
+void Motor(MotorCommand cmd)
+{
+    switch (cmd)
+    {
+    case MOVE_FWD:
+        left = ON;
+        right = ON;
+        break;
+    case STOP:
+        left = OFF;
+        right = OFF;
+        break;
+    case MOVE_BACK:
+        left = REV;
+        right = REV;
+        break;
+    case TURN_LEFT:
+        left = REV;
+        right = ON;
+        break;
+    case TURN_RIGHT:
+        left = REV;
+        right = ON;
+        break;
+    }
+}
+
 /*
  * Stub implementations for actuator control functions.
  * These stubs record the command in a global variable for test verification.
@@ -72,31 +99,4 @@ MotorCommand TurnRight()
     lastMotorCommand = TURN_RIGHT;
     Motor(lastMotorCommand);
     return lastMotorCommand;
-}
-
-void Motor(MotorCommand cmd)
-{
-    switch (cmd)
-    {
-    case MOVE_FWD:
-        left = ON;
-        right = ON;
-        break;
-    case STOP:
-        left = OFF;
-        right = OFF;
-        break;
-    case MOVE_BACK:
-        left = REV;
-        right = REV;
-        break;
-    case TURN_LEFT:
-        left = REV;
-        right = ON;
-        break;
-    case TURN_RIGHT:
-        left = REV;
-        right = ON;
-        break;
-    }
 }
