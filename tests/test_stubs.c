@@ -11,7 +11,7 @@ MotorCommand lastMotorCommand;
 CleanerCommand lastCleanerCommand;
 
 /*
- * Stub implementations for actuator control functions.
+ * Stub implementations for cleaner control functions.
  * During tests, we don't control real hardware, so these provide
  * empty implementations or default return values to allow linking.
  */
