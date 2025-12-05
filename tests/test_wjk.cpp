@@ -525,7 +525,7 @@ TEST_F(SystemTest, MoveForwardUp_TransitionsToMoveForward_AfterTimeout)
     stub_front_input = false; // 전방 장애물 없음
     stub_left_input = 50;     // 좌측 장애물
     stub_right_input = 50;    // 우측 장애물
-    stub_dust_input = 800;    // 먼지 있음
+    stub_dust_input = 0;      // 먼지 없음
     WheelState currentState = W_MOVE_FORWARD_UP;
     CleanerCommand cleaner_enable = UP;
     lastMotorCommand = MOVE_FWD;
@@ -552,7 +552,7 @@ TEST_F(SystemTest, MoveForwardUp_TransitionsToMoveForward_AfterTimeout)
 
     // When: 시스템 로직 실행 (tick 5)
     // 센서 값 변경 없음 (먼지 사라짐)
-    stub_dust_input = 200;
+    stub_dust_input = 0;
     merged_data = Merge_Sensordata(
         DetermineObstacleLocation(FrontSensorInterface(ReadFrontSensor()), LeftSensorInterface(ReadLeftSensor()), RightSensorInterface(ReadRightSensor())),
         DetermineDustExistence(DustSensorInterface(ReadDustSensor())));
@@ -563,8 +563,9 @@ TEST_F(SystemTest, MoveForwardUp_TransitionsToMoveForward_AfterTimeout)
     EXPECT_EQ(currentState, W_MOVE_FORWARD);
     EXPECT_EQ(lastMotorCommand, MOVE_FWD);
     EXPECT_EQ(lastCleanerCommand, ON);
+    EXPECT_EQ(cleaner_enable, ON);
     EXPECT_EQ(tickCount, 0);
-    EXPECT_EQ(clean, 64);
+    EXPECT_EQ(clean, 64); // TODO: Fix error
     EXPECT_EQ(left, 127);
     EXPECT_EQ(right, 127);
 }
