@@ -1,10 +1,12 @@
 #include "rvc.h"
 
-// 테스트 할 떄 사용할 input 값들
-bool stub_front_input = false;
-int stub_left_input = 150;
-int stub_right_input = 150;
-int stub_dust_input = 0;
+extern "C"
+{
+    // 테스트 할 떄 사용할 input 값들
+    bool stub_front_input = false;
+    int stub_left_input = 150;
+    int stub_right_input = 150;
+    int stub_dust_input = 0;
 
 WheelState stub_wheelstate = W_STOP;
 

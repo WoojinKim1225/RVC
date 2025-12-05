@@ -12,6 +12,10 @@ extern "C"
 
     extern MotorCommand lastMotorCommand;
     extern CleanerCommand lastCleanerCommand;
+
+    extern int clean;
+    extern int left;
+    extern int right;
 }
 
 class UnitTest : public ::testing::Test
@@ -370,3 +374,198 @@ INSTANTIATE_TEST_SUITE_P(
         ParamType{true, false, true, false}, ParamType{true, false, true, true},
         ParamType{true, true, false, false}, ParamType{true, true, false, true},
         ParamType{true, true, true, false}, ParamType{true, true, true, true}));
+
+//=========================================SYSTEM================================================
+
+class SystemTest : public ::testing::Test
+{
+protected:
+    void SetUp() override
+    {
+        tickCount = 0;
+    }
+};
+
+// 시나리오: Power-up 전진 중(W_MOVE_FORWARD_UP), 전방 장애물 감지 시
+// 기대 동작: 정지(W_STOP), 모터 정지(STOP), 클리너 OFF
+TEST_F(SystemTest, MoveForwardUp_To_Stop_WhenFrontObstacle)
+{
+    // Given: 초기 상태 및 센서 값 설정
+    stub_front_input = true; // 전방 장애물
+    stub_left_input = 50;    // 좌측 장애물 있음
+    stub_right_input = 50;   // 우측 장애물 있음
+    stub_dust_input = 800;   // 먼지 있음
+    WheelState currentState = W_MOVE_FORWARD_UP;
+    CleanerCommand cleaner_enable = UP;
+    lastMotorCommand = MOVE_FWD; // 초기 모터 상태
+    clean = 127;
+    left = 127;
+    right = 127;
+
+    // When: 시스템 로직 실행
+    SensorData merged_data = Merge_Sensordata(
+        DetermineObstacleLocation(FrontSensorInterface(ReadFrontSensor()), LeftSensorInterface(ReadLeftSensor()), RightSensorInterface(ReadRightSensor())),
+        DetermineDustExistence(DustSensorInterface(ReadDustSensor())));
+    currentState = Controller(merged_data, currentState, &cleaner_enable);
+    Cleaner(cleaner_enable);
+
+    // Then: 결과 검증
+    EXPECT_EQ(currentState, W_STOP);
+    EXPECT_EQ(lastMotorCommand, STOP);
+    EXPECT_EQ(lastCleanerCommand, OFF);
+
+    EXPECT_EQ(clean, 0);
+    EXPECT_EQ(left, 0);
+    EXPECT_EQ(right, 0);
+}
+
+// 시나리오: 정지 중(W_STOP), 전방과 좌측 장애물, 먼지 감지 시
+// 기대 동작: 우회전(W_TURN_RIGHT), 모터 우회전(TURN_RIGHT), 클리너 OFF
+TEST_F(SystemTest, Stop_To_TurnRight_WhenFrontLeftObstacle)
+{
+    // Given: 초기 상태 및 센서 값 설정
+    stub_front_input = true; // 전방 장애물
+    stub_left_input = 50;    // 좌측 장애물
+    stub_right_input = 200;  // 우측 장애물 없음
+    stub_dust_input = 800;   // 먼지 있음
+    WheelState currentState = W_STOP;
+    CleanerCommand cleaner_enable = OFF;
+    lastMotorCommand = STOP;
+    clean = 0;
+    left = 0;
+    right = 0;
+
+    // When: 시스템 로직 실행
+    SensorData merged_data = Merge_Sensordata(
+        DetermineObstacleLocation(FrontSensorInterface(ReadFrontSensor()), LeftSensorInterface(ReadLeftSensor()), RightSensorInterface(ReadRightSensor())),
+        DetermineDustExistence(DustSensorInterface(ReadDustSensor())));
+    currentState = Controller(merged_data, currentState, &cleaner_enable);
+    Cleaner(cleaner_enable);
+
+    // Then: 결과 검증
+    EXPECT_EQ(currentState, W_TURN_RIGHT);
+    EXPECT_EQ(lastMotorCommand, TURN_RIGHT);
+    EXPECT_EQ(lastCleanerCommand, OFF);
+
+    EXPECT_EQ(clean, 0);
+    EXPECT_EQ(left, -127);
+    EXPECT_EQ(right, 127);
+}
+
+// 시나리오: 일반 전진 중(W_MOVE_FORWARD), 우측 장애물과 먼지 감지 시
+// 기대 동작: 상태 유지(W_MOVE_FORWARD), 모터 전진(MOVE_FWD), 클리너 Power Up
+TEST_F(SystemTest, MoveForward_Stays_WhenRightObstacleAndDust)
+{
+    // Given: 초기 상태 및 센서 값 설정
+    stub_front_input = false; // 전방 장애물 없음
+    stub_left_input = 200;    // 좌측 장애물 없음
+    stub_right_input = 50;    // 우측 장애물
+    stub_dust_input = 800;    // 먼지 있음
+    WheelState currentState = W_MOVE_FORWARD;
+    CleanerCommand cleaner_enable = ON;
+    lastMotorCommand = MOVE_FWD;
+    clean = 0;
+    left = 127;
+    right = 127;
+
+    // When: 시스템 로직 실행
+    SensorData merged_data = Merge_Sensordata(
+        DetermineObstacleLocation(FrontSensorInterface(ReadFrontSensor()), LeftSensorInterface(ReadLeftSensor()), RightSensorInterface(ReadRightSensor())),
+        DetermineDustExistence(DustSensorInterface(ReadDustSensor())));
+    currentState = Controller(merged_data, currentState, &cleaner_enable);
+    Cleaner(cleaner_enable);
+
+    // Then: 결과 검증
+    EXPECT_EQ(currentState, W_MOVE_FORWARD_UP); // 먼지 감지로 UP 상태로 변경
+    EXPECT_EQ(lastMotorCommand, MOVE_FWD);      // 모터는 계속 전진
+    EXPECT_EQ(cleaner_enable, UP);
+    EXPECT_EQ(clean, 127);
+    EXPECT_EQ(left, 127);
+    EXPECT_EQ(right, 127);
+}
+
+// 시나리오: Power-up 전진 중(W_MOVE_FORWARD_UP), 전방 장애물과 먼지 감지 시
+// 기대 동작: 정지(W_STOP), 모터 정지(STOP), 클리너 OFF
+TEST_F(SystemTest, MoveForwardUp_To_Stop_WhenFrontObstacleAndDust)
+{
+    // Given: 초기 상태 및 센서 값 설정
+    stub_front_input = true; // 전방 장애물
+    stub_left_input = 200;   // 좌측 장애물 없음
+    stub_right_input = 200;  // 우측 장애물 없음
+    stub_dust_input = 800;   // 먼지 있음
+    WheelState currentState = W_MOVE_FORWARD_UP;
+    CleanerCommand cleaner_enable = UP;
+    lastMotorCommand = MOVE_FWD;
+    clean = 127;
+    left = 127;
+    right = 127;
+
+    // When: 시스템 로직 실행
+    SensorData merged_data = Merge_Sensordata(
+        DetermineObstacleLocation(FrontSensorInterface(ReadFrontSensor()), LeftSensorInterface(ReadLeftSensor()), RightSensorInterface(ReadRightSensor())),
+        DetermineDustExistence(DustSensorInterface(ReadDustSensor())));
+    currentState = Controller(merged_data, currentState, &cleaner_enable);
+    Cleaner(cleaner_enable);
+
+    // Then: 결과 검증
+    EXPECT_EQ(currentState, W_STOP);
+    EXPECT_EQ(lastMotorCommand, STOP);
+    EXPECT_EQ(cleaner_enable, OFF);
+
+    EXPECT_EQ(clean, 0);
+    EXPECT_EQ(left, 0);
+    EXPECT_EQ(right, 0);
+}
+
+// 시나리오: Power-up 전진 중(tickCount=4), 좌/우 장애물과 먼지 감지 시
+// 기대 동작: 상태 유지(W_MOVE_FORWARD_UP), 5틱 후 일반 전진(W_MOVE_FORWARD)으로 전환
+TEST_F(SystemTest, MoveForwardUp_TransitionsToMoveForward_AfterTimeout)
+{
+    // Given: 초기 상태 및 센서 값 설정
+    stub_front_input = false; // 전방 장애물 없음
+    stub_left_input = 50;     // 좌측 장애물
+    stub_right_input = 50;    // 우측 장애물
+    stub_dust_input = 0;      // 먼지 없음
+    WheelState currentState = W_MOVE_FORWARD_UP;
+    CleanerCommand cleaner_enable = UP;
+    lastMotorCommand = MOVE_FWD;
+    tickCount = 4; // tickCount를 4로 설정
+    clean = 127;
+    left = 127;
+    right = 127;
+
+    // When: 시스템 로직 실행 (tick 4)
+    SensorData merged_data = Merge_Sensordata(
+        DetermineObstacleLocation(FrontSensorInterface(ReadFrontSensor()), LeftSensorInterface(ReadLeftSensor()), RightSensorInterface(ReadRightSensor())),
+        DetermineDustExistence(DustSensorInterface(ReadDustSensor())));
+    currentState = Controller(merged_data, currentState, &cleaner_enable);
+    Cleaner(cleaner_enable);
+
+    // Then: tick 4에서는 상태 유지
+    EXPECT_EQ(currentState, W_MOVE_FORWARD_UP);
+    EXPECT_EQ(lastMotorCommand, MOVE_FWD);
+    EXPECT_EQ(cleaner_enable, UP);
+    EXPECT_EQ(tickCount, 5);
+    EXPECT_EQ(clean, 127);
+    EXPECT_EQ(left, 127);
+    EXPECT_EQ(right, 127);
+
+    // When: 시스템 로직 실행 (tick 5)
+    // 센서 값 변경 없음 (먼지 사라짐)
+    stub_dust_input = 0;
+    merged_data = Merge_Sensordata(
+        DetermineObstacleLocation(FrontSensorInterface(ReadFrontSensor()), LeftSensorInterface(ReadLeftSensor()), RightSensorInterface(ReadRightSensor())),
+        DetermineDustExistence(DustSensorInterface(ReadDustSensor())));
+    currentState = Controller(merged_data, currentState, &cleaner_enable);
+    Cleaner(cleaner_enable);
+
+    // Then: tick 5에서 상태 변경
+    EXPECT_EQ(currentState, W_MOVE_FORWARD);
+    EXPECT_EQ(lastMotorCommand, MOVE_FWD);
+    EXPECT_EQ(lastCleanerCommand, ON);
+    EXPECT_EQ(cleaner_enable, ON);
+    EXPECT_EQ(tickCount, 0);
+    EXPECT_EQ(clean, 64); // TODO: Fix error
+    EXPECT_EQ(left, 127);
+    EXPECT_EQ(right, 127);
+}
