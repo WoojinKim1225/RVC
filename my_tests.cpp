@@ -47,8 +47,11 @@
 extern SensorData DetermineDustExistence();
 extern MotorCommand MoveForward();
 extern MotorCommand MoveBackward();
-extern MotorCommand TurnLefti();
+extern MotorCommand TurnLeft();
 extern MotorCommand TurnRight();
+extern bool FrontSensorInterface(bool raw);
+extern bool LeftSensorInterface(int raw);
+extern bool RightSensorInterface(int raw);
 // 2. GTest 테스트 케이스 정의
 
 // TEST(TestSuiteName, TestName) 매크로를 사용하여 테스트 함수를 정의합니다.
@@ -113,4 +116,122 @@ TEST(MoveBackwardTest, cmd)
 {
     MotorCommand cmd = MoveBackward(false);
     EXPECT_EQ(STOP, cmd);
+}
+//IT -5_1 LeftSensorToDetermineObstacleLocation: LeftSensor = 120
+TEST(LeftSensor1_IntegrationTest, LeftSensorFalse)
+{
+    bool L = LeftSensorInterface(120);
+    SensorData data = DetermineObstacleLocation(false, L, false);
+    EXPECT_FALSE(data.L);
+}
+//IT -5_2 LeftSensorToDetermineObstacleLocation: LeftSensor = 100
+TEST(LeftSensor2_IntegrationTest, LeftSensorFalse)
+{
+    bool L = LeftSensorInterface(100);
+    SensorData data = DetermineObstacleLocation(false, L, false);
+    EXPECT_FALSE(data.L);
+}
+//IT -6_1 SensorInputToDetermineObstacleLocation: F:F, L:F, R:F
+TEST(SensorInterface_IntegrationTest_000, FFLFRF)
+{
+    bool F = FrontSensorInterface(false);
+    bool L = LeftSensorInterface(150);
+    bool R = RightSensorInterface(150);
+
+    SensorData data = DetermineObstacleLocation(F, L, R);
+
+    EXPECT_FALSE(data.F);
+    EXPECT_FALSE(data.L);
+    EXPECT_FALSE(data.R);
+}
+//IT -6_2 SensorInputToDetermineObstacleLocation: F:T, L:F, R:F
+TEST(SensorInterface_IntegrationTest_100, FTLFRF)
+{
+    bool F = FrontSensorInterface(true);
+    bool L = LeftSensorInterface(150);
+    bool R = RightSensorInterface(150);
+
+    SensorData data = DetermineObstacleLocation(F, L, R);
+
+    EXPECT_TRUE(data.F);
+    EXPECT_FALSE(data.L);
+    EXPECT_FALSE(data.R);
+}
+//IT -6_3 SensorInputToDetermineObstacleLocation: F:F, L:T, R:F
+TEST(SensorInterface_IntegrationTest_010, FFLTRF)
+{
+    bool F = FrontSensorInterface(false);
+    bool L = LeftSensorInterface(50);    // <100 → true
+    bool R = RightSensorInterface(150);
+
+    SensorData data = DetermineObstacleLocation(F, L, R);
+
+    EXPECT_FALSE(data.F);
+    EXPECT_TRUE(data.L);
+    EXPECT_FALSE(data.R);
+}
+//IT -6_4 SensorInputToDetermineObstacleLocation: F:F, L:F, R:T
+TEST(SensorInterface_IntegrationTest_001, FRLFRT)
+{
+    bool F = FrontSensorInterface(false);
+    bool L = LeftSensorInterface(150);
+    bool R = RightSensorInterface(50);   // <100 → true
+
+    SensorData data = DetermineObstacleLocation(F, L, R);
+
+    EXPECT_FALSE(data.F);
+    EXPECT_FALSE(data.L);
+    EXPECT_TRUE(data.R);
+}
+//IT -6_5 SensorInputToDetermineObstacleLocation: F:T, L:T, R:F
+TEST(SensorInterface_IntegrationTest_110, FTLTRF)
+{
+    bool F = FrontSensorInterface(true);
+    bool L = LeftSensorInterface(50);
+    bool R = RightSensorInterface(150);
+
+    SensorData data = DetermineObstacleLocation(F, L, R);
+
+    EXPECT_TRUE(data.F);
+    EXPECT_TRUE(data.L);
+    EXPECT_FALSE(data.R);
+}
+//IT -6_6 SensorInputToDetermineObstacleLocation: F:T, L:F, R:T
+TEST(SensorInterface_IntegrationTest_101, FTLFRT)
+{
+    bool F = FrontSensorInterface(true);
+    bool L = LeftSensorInterface(150);
+    bool R = RightSensorInterface(50);
+
+    SensorData data = DetermineObstacleLocation(F, L, R);
+
+    EXPECT_TRUE(data.F);
+    EXPECT_FALSE(data.L);
+    EXPECT_TRUE(data.R);
+}
+//IT -6_7 SensorInputToDetermineObstacleLocation: F:F, L:T, R:T
+TEST(SensorInterface_IntegrationTest_011, FFLTRT)
+{
+    bool F = FrontSensorInterface(false);
+    bool L = LeftSensorInterface(50);
+    bool R = RightSensorInterface(50);
+
+    SensorData data = DetermineObstacleLocation(F, L, R);
+
+    EXPECT_FALSE(data.F);
+    EXPECT_TRUE(data.L);
+    EXPECT_TRUE(data.R);
+}
+//IT -6_8 SensorInputToDetermineObstacleLocation: F:T, L:T, R:T
+TEST(SensorInterface_IntegrationTest_111, FTLTRT)
+{
+    bool F = FrontSensorInterface(true);
+    bool L = LeftSensorInterface(50);
+    bool R = RightSensorInterface(50);
+
+    SensorData data = DetermineObstacleLocation(F, L, R);
+
+    EXPECT_TRUE(data.F);
+    EXPECT_TRUE(data.L);
+    EXPECT_TRUE(data.R);
 }
