@@ -7,6 +7,7 @@ extern "C"
     int stub_left_input = 150;
     int stub_right_input = 150;
     int stub_dust_input = 0;
+}
 
 WheelState stub_wheelstate = W_STOP;
 

@@ -1,19 +1,21 @@
 #include <gtest/gtest.h>
 #include "rvc.h"
 
-/* mock/stub 변수 가져오기 */
-extern bool stub_front_input;
-extern int stub_left_input;
-extern int stub_right_input;
-extern int stub_dust_input;
-extern WheelState stub_wheelstate;
-extern MotorCommand lastMotorCommand;
-extern CleanerCommand lastCleanerCommand; 
+extern "C"
+{
+    /* mock/stub 변수 가져오기 */
+    bool stub_front_input;
+    int stub_left_input;
+    int stub_right_input;
+    int stub_dust_input;
+    WheelState stub_wheelstate;
+    MotorCommand lastMotorCommand;
+    CleanerCommand lastCleanerCommand;
 
-extern int clean;
-extern int left;
-extern int right;
-
+    int clean;
+    int left;
+    int right;
+}
 // typedef enum {
 //     MOVE_FWD,
 //     MOVE_BACK,
@@ -47,7 +49,8 @@ extern int right;
 //         lastCleanerCommand = OFF;
 //     }
 // };
-TEST(system_test, systemtest1) {
+TEST(system_test, systemtest1)
+{
     tickCount = 0;
     lastMotorCommand = MOVE_BACK;
     lastCleanerCommand = OFF;
@@ -72,14 +75,14 @@ TEST(system_test, systemtest1) {
     stub_wheelstate = Controller(merged_data, stub_wheelstate, &lastCleanerCommand);
     Cleaner(lastCleanerCommand);
     Motor(lastMotorCommand);
-    
+
     EXPECT_EQ(clean, 0);
     // ✔ Motor 결과 확인 (왼쪽/오른쪽 휠)
     EXPECT_EQ(left, -127);
     EXPECT_EQ(right, 127);
-
 }
-TEST(system_test, systemtest2) {
+TEST(system_test, systemtest2)
+{
     tickCount = 2;
     lastMotorCommand = MOVE_FWD;
     lastCleanerCommand = UP;
@@ -104,14 +107,14 @@ TEST(system_test, systemtest2) {
     stub_wheelstate = Controller(merged_data, stub_wheelstate, &lastCleanerCommand);
     Cleaner(lastCleanerCommand);
     Motor(lastMotorCommand);
-    
+
     EXPECT_EQ(clean, 0);
     // ✔ Motor 결과 확인 (왼쪽/오른쪽 휠)
     EXPECT_EQ(left, 0);
     EXPECT_EQ(right, 0);
-
 }
-TEST(system_test, systemtest3) {
+TEST(system_test, systemtest3)
+{
     tickCount = 3;
     lastMotorCommand = MOVE_FWD;
     lastCleanerCommand = UP;
@@ -136,14 +139,14 @@ TEST(system_test, systemtest3) {
     stub_wheelstate = Controller(merged_data, stub_wheelstate, &lastCleanerCommand);
     Cleaner(lastCleanerCommand);
     Motor(lastMotorCommand);
-    
+
     EXPECT_EQ(clean, 0);
     // ✔ Motor 결과 확인 (왼쪽/오른쪽 휠)
     EXPECT_EQ(left, 0);
     EXPECT_EQ(right, 0);
-
 }
-TEST(system_test, systemtest4) {
+TEST(system_test, systemtest4)
+{
     tickCount = 0;
     lastMotorCommand = MOVE_FWD;
     lastCleanerCommand = ON;
@@ -168,14 +171,14 @@ TEST(system_test, systemtest4) {
     stub_wheelstate = Controller(merged_data, stub_wheelstate, &lastCleanerCommand);
     Cleaner(lastCleanerCommand);
     Motor(lastMotorCommand);
-    
+
     EXPECT_EQ(clean, 64);
     // ✔ Motor 결과 확인 (왼쪽/오른쪽 휠)
     EXPECT_EQ(left, 127);
     EXPECT_EQ(right, 127);
-
 }
-TEST(system_test, systemtest5) {
+TEST(system_test, systemtest5)
+{
     tickCount = 0;
     lastMotorCommand = STOP;
     lastCleanerCommand = OFF;
@@ -200,14 +203,14 @@ TEST(system_test, systemtest5) {
     stub_wheelstate = Controller(merged_data, stub_wheelstate, &lastCleanerCommand);
     Cleaner(lastCleanerCommand);
     Motor(lastMotorCommand);
-    
+
     EXPECT_EQ(clean, 0);
     // ✔ Motor 결과 확인 (왼쪽/오른쪽 휠)
     EXPECT_EQ(left, -127);
     EXPECT_EQ(right, 127);
-
 }
-TEST(system_test, systemtest6) {
+TEST(system_test, systemtest6)
+{
     tickCount = 0;
     lastMotorCommand = MOVE_BACK;
     lastCleanerCommand = OFF;
@@ -232,10 +235,9 @@ TEST(system_test, systemtest6) {
     stub_wheelstate = Controller(merged_data, stub_wheelstate, &lastCleanerCommand);
     Cleaner(lastCleanerCommand);
     Motor(lastMotorCommand);
-    
+
     EXPECT_EQ(clean, 0);
     // ✔ Motor 결과 확인 (왼쪽/오른쪽 휠)
     EXPECT_EQ(left, -127);
     EXPECT_EQ(right, -127);
-
 }
