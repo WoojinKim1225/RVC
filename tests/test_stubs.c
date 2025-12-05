@@ -7,7 +7,7 @@
 #define REV -127
 
 /* Stub for the wait function */
-void wait(int ticks)
+void rvc_wait(int ticks)
 {
     (void)ticks; // To avoid unused variable warning
 }
