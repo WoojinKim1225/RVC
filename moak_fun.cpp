@@ -8,10 +8,11 @@ extern "C"
     int stub_right_input = 150;
     int stub_dust_input = 0;
 
-    // test 할 때 모터 명령과 cleaner 명령을 기록할 수 있는 가짜 함수를 위한 변수
-    MotorCommand lastMotorCommand;
-    CleanerCommand lastCleanerCommand;
-}
+WheelState stub_wheelstate = W_STOP;
+
+// test 할 때 모터 명령과 cleaner 명령을 기록할 수 있는 가짜 함수를 위한 변수
+MotorCommand lastMotorCommand;
+CleanerCommand lastCleanerCommand;
 
 /* -------------------------------
    Stubbed sensor functions
