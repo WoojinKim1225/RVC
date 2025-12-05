@@ -1,14 +1,17 @@
 #include "rvc.h"
 
-// 테스트 할 떄 사용할 input 값들
-bool stub_front_input = false;
-int stub_left_input = 150;
-int stub_right_input = 150;
-int stub_dust_input = 0;
+extern "C"
+{
+    // 테스트 할 떄 사용할 input 값들
+    bool stub_front_input = false;
+    int stub_left_input = 150;
+    int stub_right_input = 150;
+    int stub_dust_input = 0;
 
-// test 할 때 모터 명령과 cleaner 명령을 기록할 수 있는 가짜 함수를 위한 변수
-MotorCommand lastMotorCommand;
-CleanerCommand lastCleanerCommand;
+    // test 할 때 모터 명령과 cleaner 명령을 기록할 수 있는 가짜 함수를 위한 변수
+    MotorCommand lastMotorCommand;
+    CleanerCommand lastCleanerCommand;
+}
 
 /* -------------------------------
    Stubbed sensor functions
