@@ -1,34 +1,45 @@
 #include <stdbool.h>
 #include "../include/rvc.h"
 
-/*
- * Stub variables for sensor inputs, controlled by test cases.
- * These are referenced via 'extern' in test_wjk.cpp.
- */
-bool stub_front_input = false;
-int stub_left_input = 0;
-int stub_right_input = 0;
-int stub_dust_input = 0;
-
-/*
- * Stub implementations for hardware-dependent sensor reading functions.
- * They return the values of the stub variables.
- */
-bool ReadFrontSensor(void) { return stub_front_input; }
-int ReadLeftSensor(void) { return stub_left_input; }
-int ReadRightSensor(void) { return stub_right_input; }
-int ReadDustSensor(void) { return stub_dust_input; }
-
-/* Stub for the wait function from 2.c */
+/* Stub for the wait function */
 void wait(int ticks)
 {
     (void)ticks; // To avoid unused variable warning
 }
 
+MotorCommand lastMotorCommand;
+CleanerCommand lastCleanerCommand;
+
 /*
- * Stub implementations for actuator control functions.
+ * Stub implementations for cleaner control functions.
  * During tests, we don't control real hardware, so these provide
  * empty implementations or default return values to allow linking.
  */
 
-void Cleaner(CleanerCommand com) { (void)com; }
+void Cleaner(CleanerCommand com) { lastCleanerCommand = com; }
+
+/*
+ * Stub implementations for actuator control functions.
+ * These stubs record the command in a global variable for test verification.
+ */
+MotorCommand MoveForward(bool enable)
+{
+    lastMotorCommand = enable ? MOVE_FWD : STOP;
+    return lastMotorCommand;
+}
+
+MotorCommand MoveBackward(bool enable)
+{
+    lastMotorCommand = enable ? MOVE_BACK : STOP;
+    return lastMotorCommand;
+}
+
+MotorCommand TurnLeft()
+{
+    return lastMotorCommand = TURN_LEFT;
+}
+
+MotorCommand TurnRight()
+{
+    return lastMotorCommand = TURN_RIGHT;
+}

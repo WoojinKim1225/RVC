@@ -33,4 +33,3 @@ int ReadDustSensor()
 {
     return stub_dust_input;
 }
-
