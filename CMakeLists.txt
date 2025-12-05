@@ -62,11 +62,13 @@ target_compile_definitions(test_dust PRIVATE UNIT_TEST) # UNIT_TEST 매크로 �
 target_include_directories(test_dust PUBLIC include) # 테스트 파일이 헤더를 찾을 수 있도록 경로 추가
 target_link_libraries(test_dust PRIVATE GTest::gtest_main test_stubs)
 gtest_discover_tests(test_dust)
+
 # --- 테스트 4: integration test ---
 add_executable(inte_test 
 test/integration_test.cpp
 src/1.c
 )
+target_compile_definitions(inte_test PRIVATE UNIT_TEST)
 target_include_directories(inte_test PUBLIC include)
 target_link_libraries(inte_test PRIVATE GTest::gtest_main test_stubs)
 gtest_discover_tests(inte_test)
