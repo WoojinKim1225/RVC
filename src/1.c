@@ -74,6 +74,8 @@ int ReadLeftSensor();
 int ReadRightSensor();
 int ReadDustSensor();
 
+void rvc_wait(int ticks);
+
 /* ------------------------------------------------------------------------- */
 /* SENSOR INTERFACE IMPLEMENTATION                                           */
 /* ------------------------------------------------------------------------- */
@@ -259,7 +261,7 @@ WheelState Controller(SensorData data, WheelState wheelstate, CleanerCommand *co
 /* MAIN LOOP                                                                  */
 /* ------------------------------------------------------------------------- */
 
-#ifndef UNIT_TEST
+#ifndef UNIT_TEST 
 
 MotorCommand MoveForward(bool enable)
 {
@@ -268,17 +270,14 @@ MotorCommand MoveForward(bool enable)
     else
         return STOP;
 }
-// test용 stub 구현(하드웨어 Turnleft)
 MotorCommand TurnLeft()
 {
     return TURN_LEFT;
 }
-// test용 stub 구현(하드웨어 Turnright)
 MotorCommand TurnRight()
 {
     return TURN_RIGHT;
 }
-// test용 stub구현(하드웨어 Movebackward)
 MotorCommand MoveBackward(bool enable)
 {
     if (enable)
@@ -322,7 +321,7 @@ int main(void)
         wheelstate = Controller(merged_data, wheelstate, &cleaner_com);
         Cleaner(cleaner_com);
         /* Step 4: Wait for next control tick */
-        wait(TICK);
+        rvc_wait(TICK);
     }
     return 0;
 }

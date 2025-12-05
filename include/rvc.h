@@ -78,7 +78,9 @@ extern int ReadDustSensor();
 
 /* Global tickCount */
 extern int tickCount;
-
+// 가짜 motor 함수
+extern void Motor(MotorCommand cmd);
+extern void rvc_wait(int ticks);
 #ifdef __cplusplus
 }
 #endif

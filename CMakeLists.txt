@@ -72,3 +72,13 @@ target_compile_definitions(inte_test PRIVATE UNIT_TEST)
 target_include_directories(inte_test PUBLIC include)
 target_link_libraries(inte_test PRIVATE GTest::gtest_main test_stubs)
 gtest_discover_tests(inte_test)
+
+# -- 테스트 5: system test
+add_executable(system_tests
+test/system_test.cpp
+src/1.c
+)
+target_compile_definitions(system_tests PRIVATE UNIT_TEST)
+target_include_directories(system_tests PUBLIC include)
+target_link_libraries(system_tests PRIVATE GTest::gtest_main test_stubs)
+gtest_discover_tests(system_tests)
