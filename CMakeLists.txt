@@ -66,8 +66,7 @@ gtest_discover_tests(test_dust)
 add_executable(inte_test 
 test/integration_test.cpp
 src/1.c
-moak_fun.cpp
 )
 target_include_directories(inte_test PUBLIC include)
-target_link_libraries(inte_test PRIVATE GTest::gtest_main)
+target_link_libraries(inte_test PRIVATE GTest::gtest_main test_stubs)
 gtest_discover_tests(inte_test)
