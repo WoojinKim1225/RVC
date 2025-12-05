@@ -49,23 +49,29 @@ void Cleaner(CleanerCommand com)
 MotorCommand MoveForward(bool enable)
 {
     lastMotorCommand = enable ? MOVE_FWD : STOP;
+    Motor(lastMotorCommand);
     return lastMotorCommand;
 }
 
 MotorCommand MoveBackward(bool enable)
 {
     lastMotorCommand = enable ? MOVE_BACK : STOP;
+    Motor(lastMotorCommand);
     return lastMotorCommand;
 }
 
 MotorCommand TurnLeft()
 {
-    return lastMotorCommand = TURN_LEFT;
+    lastMotorCommand = TURN_LEFT;
+    Motor(lastMotorCommand);
+    return lastMotorCommand;
 }
 
 MotorCommand TurnRight()
 {
-    return lastMotorCommand = TURN_RIGHT;
+    lastMotorCommand = TURN_RIGHT;
+    Motor(lastMotorCommand);
+    return lastMotorCommand;
 }
 
 void Motor(MotorCommand cmd)
